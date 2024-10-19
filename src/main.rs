@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::vec::Vec;
 use std::fmt::Display;
 use std::any::TypeId;
 use std::any::Any;
@@ -69,6 +70,28 @@ impl ComponentManager {
     }
 }
 
+trait System {
+    fn apply(&self);
+}
+
+struct Render {
+}
+
+impl System for Render {
+    fn apply(&self) {
+        println!("Apply for Render");
+    }
+}
+
+struct Transform {
+}
+
+impl System for Transform {
+    fn apply(&self) {
+        println!("Apply for Transform");
+    }
+}
+
 fn main() {
 
     println!("Test entity pool"); ////////////////////////////////////
@@ -100,6 +123,16 @@ fn main() {
     cm.register(comp_arr1);
     cm.register(comp_arr2);
     cm.dump();
+
+    // System
+    let r = Render{};
+    let t = Transform{};
+    let systems: Vec<Box<dyn System>> = vec![Box::new(Render{}), Box::new(Transform{})] ;
+
+    for system in systems {
+        system.apply()
+    }
+
 }
 
 
