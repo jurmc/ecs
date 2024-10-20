@@ -9,41 +9,41 @@ const MAX_ENTITIES: u32 = 10;
 type Entity = u32;
 
 struct EntitiesPool {
-    available_entities: HashSet<u32>,
-    used_entities: HashSet<u32>,
-    signatures: HashMap<u32, HashSet<u32>>,
+    available_entities: HashSet<Entity>,
+    used_entities: HashSet<Entity>,
+    signatures: HashMap<Entity, HashSet<u32>>,
 }
 
 impl EntitiesPool {
     fn new() -> EntitiesPool {
         let mut available_entities = HashSet::with_capacity(MAX_ENTITIES as usize);
-        for entity_id in (0..MAX_ENTITIES).rev() {
-            available_entities.insert(entity_id);
+        for entity in (0..MAX_ENTITIES).rev() {
+            available_entities.insert(entity as Entity);
         }
-        let used_entities: HashSet<u32> = HashSet::with_capacity(MAX_ENTITIES as usize);
+        let used_entities: HashSet<Entity> = HashSet::with_capacity(MAX_ENTITIES as usize);
 
-        let signatures: HashMap<u32, HashSet<u32>> = HashMap::new();
+        let signatures: HashMap<Entity, HashSet<u32>> = HashMap::new();
         EntitiesPool { available_entities, used_entities, signatures }
     }
 
-    fn get(&mut self) -> u32 {
-        let entity_id = self.available_entities.iter().next().unwrap().clone();
-        self.available_entities.remove(&entity_id);
-        self.used_entities.insert(entity_id);
-        entity_id
+    fn get(&mut self) -> Entity {
+        let entity = self.available_entities.iter().next().unwrap().clone();
+        self.available_entities.remove(&entity);
+        self.used_entities.insert(entity);
+        entity
     }
 
-    fn give_back(&mut self, entity_id: u32) {
-        self.available_entities.insert(entity_id);
-        self.used_entities.remove(&entity_id);
+    fn give_back(&mut self, entity: Entity) {
+        self.available_entities.insert(entity);
+        self.used_entities.remove(&entity);
     }
 
     // TODO: check adding (and modifying) singatures of Entities
     //                                                             this u32 is id for components,
     //                                                             TODO: use some type aliasing
-    fn set_signature(&mut self, entity_id: u32, signature: HashSet<u32>) {
+    fn set_signature(&mut self, entity: Entity, signature: HashSet<u32>) {
         // TODO: add check if entity is alredy taken (it doesn't exists in available_entities)
-        self.signatures.insert(entity_id, signature).unwrap();
+        self.signatures.insert(entity, signature).unwrap();
     }
 }
 
