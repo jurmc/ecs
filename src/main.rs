@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::collections::HashMap;
 use std::vec::Vec;
 use std::fmt::Display;
 use std::any::TypeId;
@@ -7,27 +8,38 @@ use std::any::Any;
 const MAX_ENTITIES: u32 = 10;
 
 struct EntitiesPool {
-    entities: HashSet<u32>,
+    available_entities: HashSet<u32>,
+    signatures: HashMap<u32, HashSet<u32>>,
 }
 
 impl EntitiesPool {
     fn new() -> EntitiesPool {
-        let mut entities = HashSet::with_capacity(MAX_ENTITIES as usize);
+        let mut available_entities = HashSet::with_capacity(MAX_ENTITIES as usize);
         for entity_id in (0..MAX_ENTITIES).rev() {
-            entities.insert(entity_id);
+            available_entities.insert(entity_id);
         }
 
-        EntitiesPool { entities }
+        let signatures: HashMap<u32, HashSet<u32>> = HashMap::new();
+        EntitiesPool { available_entities, signatures }
     }
 
     fn get(&mut self) -> u32 {
-        let elem = self.entities.iter().next().unwrap().clone();
-        self.entities.remove(&elem);
+        let elem = self.available_entities.iter().next().unwrap().clone();
+        self.available_entities.remove(&elem);
         elem
     }
 
     fn give_back(&mut self, entity_id: u32) {
-        self.entities.insert(entity_id);
+        self.available_entities.insert(entity_id);
+    }
+
+
+    // TODO: check adding (and modifying) singatures of Entities
+    //                                                             this u32 is id for components,
+    //                                                             TODO: use some type aliasing
+    fn set_signature(&mut self, entity_id: u32, signature: HashSet<u32>) {
+        // TODO: add check if entity is alredy taken (it doesn't exists in available_entities)
+        self.signatures.insert(entity_id, signature).unwrap();
     }
 }
 
