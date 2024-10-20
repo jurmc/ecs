@@ -6,9 +6,11 @@ use std::any::TypeId;
 use std::any::Any;
 
 const MAX_ENTITIES: u32 = 10;
+type Entity = u32;
 
 struct EntitiesPool {
     available_entities: HashSet<u32>,
+    used_entities: HashSet<u32>,
     signatures: HashMap<u32, HashSet<u32>>,
 }
 
@@ -18,21 +20,23 @@ impl EntitiesPool {
         for entity_id in (0..MAX_ENTITIES).rev() {
             available_entities.insert(entity_id);
         }
+        let used_entities: HashSet<u32> = HashSet::with_capacity(MAX_ENTITIES as usize);
 
         let signatures: HashMap<u32, HashSet<u32>> = HashMap::new();
-        EntitiesPool { available_entities, signatures }
+        EntitiesPool { available_entities, used_entities, signatures }
     }
 
     fn get(&mut self) -> u32 {
-        let elem = self.available_entities.iter().next().unwrap().clone();
-        self.available_entities.remove(&elem);
-        elem
+        let entity_id = self.available_entities.iter().next().unwrap().clone();
+        self.available_entities.remove(&entity_id);
+        self.used_entities.insert(entity_id);
+        entity_id
     }
 
     fn give_back(&mut self, entity_id: u32) {
         self.available_entities.insert(entity_id);
+        self.used_entities.remove(&entity_id);
     }
-
 
     // TODO: check adding (and modifying) singatures of Entities
     //                                                             this u32 is id for components,
@@ -47,7 +51,7 @@ struct ComponentArray<T: Display> {
     components: Vec<T>,
 }
 
-impl<T: Display> ComponentArray<T> {
+impl<T:  Display> ComponentArray<T> {
     fn new() -> ComponentArray<T> {
         ComponentArray { components: Vec::new(), }
     }
@@ -105,21 +109,7 @@ impl System for Transform {
 }
 
 fn main() {
-
-    println!("Test entity pool"); ////////////////////////////////////
-    let mut pool = EntitiesPool::new();
-    let entity1 = pool.get();
-    println!("Got entity: {}", entity1);
-    let entity2 = pool.get();
-    println!("Got entity: {}", entity2);
-
-    pool.give_back(entity1);
-    pool.give_back(entity1);
-
-    let entity3 = pool.get();
-    println!("Got entity: {}", entity3);
-
-    println!("Test component arrays"); ////////////////////////////////////
+    println!("Test component arrays ---------------------------------");
     let mut comp_arr1 = ComponentArray::new();
     comp_arr1.add(1);
     comp_arr1.add(2);
@@ -130,11 +120,26 @@ fn main() {
     comp_arr1.dump();
     comp_arr2.dump();
 
-    // Component manager
     let mut cm = ComponentManager::new();
     cm.register(comp_arr1);
     cm.register(comp_arr2);
     cm.dump();
+    println!("-------------------------------------------------------");
+
+
+    println!("Test entity pool"); ////////////////////////////////////
+    let mut pool = EntitiesPool::new();
+    let entity1 = pool.get();
+    println!("Got entity: {}", entity1);
+
+    let entity2 = pool.get();
+    println!("Got entity: {}", entity2);
+
+    pool.give_back(entity1);
+    pool.give_back(entity1);
+
+    let entity3 = pool.get();
+    println!("Got entity: {}", entity3);
 
     // System
     let r = Render{};
