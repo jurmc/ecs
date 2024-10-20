@@ -7,11 +7,12 @@ use std::any::Any;
 
 const MAX_ENTITIES: u32 = 10;
 type Entity = u32;
+type ComponentType = TypeId;
 
 struct EntitiesPool {
     available_entities: HashSet<Entity>,
     used_entities: HashSet<Entity>,
-    signatures: HashMap<Entity, HashSet<u32>>,
+    components: HashMap<Entity, HashSet<ComponentType>>,
 }
 
 impl EntitiesPool {
@@ -22,8 +23,8 @@ impl EntitiesPool {
         }
         let used_entities: HashSet<Entity> = HashSet::with_capacity(MAX_ENTITIES as usize);
 
-        let signatures: HashMap<Entity, HashSet<u32>> = HashMap::new();
-        EntitiesPool { available_entities, used_entities, signatures }
+        let components: HashMap<Entity, HashSet<ComponentType>> = HashMap::new();
+        EntitiesPool { available_entities, used_entities, components }
     }
 
     fn get(&mut self) -> Entity {
@@ -38,13 +39,15 @@ impl EntitiesPool {
         self.used_entities.remove(&entity);
     }
 
-    // TODO: check adding (and modifying) singatures of Entities
-    //                                                             this u32 is id for components,
-    //                                                             TODO: use some type aliasing
-    fn set_signature(&mut self, entity: Entity, signature: HashSet<u32>) {
+    fn set_components(&mut self, entity: Entity, components: HashSet<ComponentType>) {
         // TODO: add check if entity is alredy taken (it doesn't exists in available_entities)
-        self.signatures.insert(entity, signature).unwrap();
+        if self.used_entities.contains(&entity) {
+            self.components.insert(entity, components).unwrap();
+        }
     }
+    // TODO: add functions for adding and removing single components for entity,
+    //       so this will be modification ofr self.components, instead of setting it from
+    //       scratch as this is already done for set_components
 }
 
 struct ComponentArray<T: Display> {
@@ -109,6 +112,21 @@ impl System for Transform {
 }
 
 fn main() {
+    println!("Test entity pool");
+    let mut pool = EntitiesPool::new();
+    let entity1 = pool.get();
+    println!("Got entity: {}", entity1);
+
+    let entity2 = pool.get();
+    println!("Got entity: {}", entity2);
+
+    pool.give_back(entity1);
+    pool.give_back(entity1);
+
+    let entity3 = pool.get();
+    println!("Got entity: {}", entity3);
+    println!("-------------------------------------------------------");
+
     println!("Test component arrays ---------------------------------");
     let mut comp_arr1 = ComponentArray::new();
     comp_arr1.add(1);
@@ -127,19 +145,6 @@ fn main() {
     println!("-------------------------------------------------------");
 
 
-    println!("Test entity pool"); ////////////////////////////////////
-    let mut pool = EntitiesPool::new();
-    let entity1 = pool.get();
-    println!("Got entity: {}", entity1);
-
-    let entity2 = pool.get();
-    println!("Got entity: {}", entity2);
-
-    pool.give_back(entity1);
-    pool.give_back(entity1);
-
-    let entity3 = pool.get();
-    println!("Got entity: {}", entity3);
 
     // System
     let r = Render{};
