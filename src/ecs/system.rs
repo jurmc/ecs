@@ -1,4 +1,5 @@
 use crate::ecs::Entity;
+use crate::ecs::ComponentManager;
 
 use std::collections::HashSet;
 
@@ -6,7 +7,7 @@ pub trait System {
     fn add_entity(&mut self, entity: Entity);
     //fn remove_entity(entity: Entity);
 
-    fn apply(&self);
+    fn apply(&self, cm: &ComponentManager);
 }
 
 pub struct Render {
@@ -24,10 +25,10 @@ impl System for Render {
         self.entities.insert(entity);
     }
 
-    fn apply(&self) {
+    fn apply(&self, cm: &ComponentManager) {
         println!("Apply for Render");
         for e in self.entities.iter() {
-            println!(" e: {}", e);    
+            println!(" e: {}", e);
         }
     }
 }
@@ -47,10 +48,11 @@ impl System for Transform {
         self.entities.insert(entity);
     }
 
-    fn apply(&self) {
+    fn apply(&self, cm: &ComponentManager) {
         println!("Apply for Transform");
         for e in self.entities.iter() {
-            println!(" e: {}", e);    
+            println!(" e: {}", e);
+            println!("   component1: {}", e);
         }
     }
 }
