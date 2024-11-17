@@ -1,8 +1,9 @@
-use std::collections::HashSet;
 use crate::ecs::MAX_ENTITIES;
-use std::collections::HashMap;
 use crate::ecs::Entity;
 use crate::ecs::ComponentType;
+
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 pub struct EntitiesPool {
     available_entities: HashSet<Entity>,

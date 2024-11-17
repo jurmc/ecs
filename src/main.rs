@@ -25,7 +25,7 @@ fn main() {
     println!("Got entity: {}", entity3);
     println!("-------------------------------------------------------");
 
-    println!("Test component arrays ---------------------------------");
+    println!("Test-component-arrays---------------------------------");
     let mut comp_arr1 = ComponentArray::new();
     comp_arr1.add(1);
     comp_arr1.add(2);
@@ -40,17 +40,22 @@ fn main() {
     cm.register(comp_arr1);
     cm.register(comp_arr2);
     cm.dump();
-    println!("-------------------------------------------------------");
 
-    // System
-    let r = Render{};
-    let t = Transform{};
-    let systems: Vec<Box<dyn System>> = vec![Box::new(Render{}), Box::new(Transform{})] ;
+    println!("-Test-system-manipulation-------------------------------------------------");
+
+    let mut t = Transform::new();
+    t.add_entity(pool.get());
+    t.add_entity(pool.get());
+
+    let mut r = Render::new();
+    r.add_entity(pool.get());
+    r.add_entity(pool.get());
+
+    let systems: Vec<Box<dyn System>> = vec![Box::new(r), Box::new(t)] ;
 
     for system in systems {
         system.apply()
     }
 
 }
-
 
