@@ -1,24 +1,28 @@
+use crate::ecs::Entity;
+
 use std::collections::HashSet;
-use std::vec::Vec;
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::any::TypeId;
 use std::any::Any;
 
 pub struct ComponentArray<T: Display> {
-    components: Vec<T>,
+    components: HashMap<Entity, T>,
 }
 
 impl<T:  Display> ComponentArray<T> {
     pub fn new() -> ComponentArray<T> {
-        ComponentArray { components: Vec::new(), }
+        ComponentArray { components: HashMap::new() }
     }
-    pub fn add(&mut self, component: T) {
-        self.components.push(component);
+
+    pub fn add(&mut self, entity: Entity, component: T) {
+        self.components.insert(entity, component);
     }
 
     pub fn dump(&mut self) {
-        for c in self.components.iter() {
-            println!("c: {}", c);
+        println!("Dump:");
+        for (entity, component) in self.components.iter() {
+            println!("entity: {}, component: {}", entity, component);
         }
     }
 }

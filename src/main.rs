@@ -27,20 +27,24 @@ fn main() {
 
     println!("-Test-simple-component-arrays---------------------------------");
     let mut comp_arr1 = ComponentArray::new();
-    comp_arr1.add(1);
-    comp_arr1.add(2);
+    comp_arr1.add(pool.get(), 1);
+    comp_arr1.add(pool.get(), 2);
     let mut comp_arr2 = ComponentArray::new();
-    comp_arr2.add(1.5);
-    comp_arr2.add(2.5);
+    comp_arr2.add(pool.get(), 1.5);
+    comp_arr2.add(pool.get(), 2.5);
 
     comp_arr1.dump();
     comp_arr2.dump();
+
+    // TODO: Then we should be able to get component using some entity id
+    //       ... but for what reason?
 
     println!("-[TODO]-Test-component-manger----------------------------------");
     println!("-[TODO]-here-we-should-have-mapping-bettween-entities-ids-and-indexes-in-component-arrays-");
     let mut cm = ComponentManager::new();
     cm.register(comp_arr1);
     cm.register(comp_arr2);
+
     cm.dump();
 
     println!("-Test-system-manipulation-------------------------------------------------");
