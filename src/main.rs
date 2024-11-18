@@ -27,20 +27,28 @@ fn main() {
 
     println!("-Test-simple-component-arrays---------------------------------");
     let mut comp_arr1 = ComponentArray::new();
-    comp_arr1.add(pool.get(), 1);
-    comp_arr1.add(pool.get(), 2);
+    let (e1, e2) = (pool.get(), pool.get());
+    comp_arr1.add(e1, 1);
+    comp_arr1.add(e2, 2);
+
     let mut comp_arr2 = ComponentArray::new();
-    comp_arr2.add(pool.get(), 1.5);
-    comp_arr2.add(pool.get(), 2.5);
+    let (e3, e4) = (pool.get(), pool.get());
+    comp_arr2.add(e3, 1.5);
+    comp_arr2.add(e4, 2.5);
 
     comp_arr1.dump();
     comp_arr2.dump();
 
-    // TODO: Then we should be able to get component using some entity id
-    //       ... but for what reason?
+    println!("comp_arr1.get(e1): {}", comp_arr1.get(&e1));
+    println!("comp_arr1.get(e2): {}", comp_arr1.get(&e2));
+
+    println!("comp_arr2.get(e3): {}", comp_arr2.get(&e3));
+    println!("comp_arr2.get(e4): {}", comp_arr2.get(&e4));
 
     println!("-[TODO]-Test-component-manger----------------------------------");
-    println!("-[TODO]-here-we-should-have-mapping-bettween-entities-ids-and-indexes-in-component-arrays-");
+    println!("-[TODO]-add-component-(after-registering)-of-particular-type-for-an-entity-");
+    println!("-[TODO]-get-component-of-particular-type-for-an-entity-");
+
     let mut cm = ComponentManager::new();
     cm.register(comp_arr1);
     cm.register(comp_arr2);

@@ -19,6 +19,10 @@ impl<T:  Display> ComponentArray<T> {
         self.components.insert(entity, component);
     }
 
+    pub fn get(&mut self, entity: &Entity) -> &T {
+        self.components.get(entity).unwrap()
+    }
+
     pub fn dump(&mut self) {
         println!("Dump:");
         for (entity, component) in self.components.iter() {
