@@ -6,9 +6,14 @@ use std::fmt::Display;
 use std::any::TypeId;
 use std::any::Any;
 
+trait ComponentArrayIC {
+}
+
 pub struct ComponentArray<T: Display> {
     components: HashMap<Entity, T>,
 }
+
+impl<T:  Display> ComponentArrayIC for ComponentArray<T> {}
 
 impl<T:  Display> ComponentArray<T> {
     pub fn new() -> ComponentArray<T> {
@@ -33,16 +38,20 @@ impl<T:  Display> ComponentArray<T> {
 
 pub struct ComponentManager {
     component_types: HashSet<TypeId>,
-    //component_arrays: HashMap<TypeId, ComponentArray>,
+    component_arrays: HashMap<TypeId, Box<dyn ComponentArrayIC>>,
 }
 
 impl ComponentManager {
     pub fn new() -> ComponentManager {
-        ComponentManager { component_types: HashSet::new(), }
+        ComponentManager {
+            component_types: HashSet::new(),
+            component_arrays: HashMap::new(),
+        }
     }
 
     pub fn register<T: Display + Any>(&mut self, component_array: ComponentArray<T>) {
         self.component_types.insert(TypeId::of::<T>());
+        self.component_arrays.insert(TypeId::of::<T>(), Box::new(component_array));
     }
 
     pub fn add_component<T: Display + Any>(&self, entity: Entity, component: T) {
@@ -51,10 +60,16 @@ impl ComponentManager {
         let id = TypeId::of::<T>();
         if self.component_types.contains(&id) {
             println!("We have this");
-            // 2. Find relevant component array
-            // 3. add passed component to the relevant array
+            let array = self.component_arrays.get(&id).unwrap(); // 2. Find relevant component array
+            // array.add(entity, component)// 3. add passed component to the relevant array
         }
+    }
 
+    // https://users.rust-lang.org/t/convert-generic-trait-t-back-to-struct/11581/2
+    // https://doc.rust-lang.org/std/boxed/struct.Box.html#method.downcast
+    fn get_component_array<T: Display + Any>(&self, component: T) -> ComponentArray<T> {
+        let id = TypeId::of::<T>();
+        *self.component_arrays.get(&id).unwrap()
     }
 
     pub fn dump(&self) {
