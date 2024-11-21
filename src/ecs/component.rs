@@ -32,20 +32,33 @@ impl<T:  Display> ComponentArray<T> {
 }
 
 pub struct ComponentManager {
-    components: HashSet<TypeId>,
+    component_types: HashSet<TypeId>,
+    //component_arrays: HashMap<TypeId, ComponentArray>,
 }
 
 impl ComponentManager {
     pub fn new() -> ComponentManager {
-        ComponentManager { components: HashSet::new(), }
+        ComponentManager { component_types: HashSet::new(), }
     }
 
     pub fn register<T: Display + Any>(&mut self, component_array: ComponentArray<T>) {
-        self.components.insert(TypeId::of::<T>());
+        self.component_types.insert(TypeId::of::<T>());
+    }
+
+    pub fn add_component<T: Display + Any>(&self, entity: Entity, component: T) {
+        println!("Component added to ComponentManager");
+
+        let id = TypeId::of::<T>();
+        if self.component_types.contains(&id) {
+            println!("We have this");
+            // 2. Find relevant component array
+            // 3. add passed component to the relevant array
+        }
+
     }
 
     pub fn dump(&self) {
-        for c in self.components.iter() {
+        for c in self.component_types.iter() {
             println!("c: {:?}", c);
         }
     }

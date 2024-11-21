@@ -1,11 +1,11 @@
-use std::vec::Vec;
+//use std::vec::Vec;
 
 use ecs::EntitiesPool;
 use ecs::ComponentManager;
 use ecs::ComponentArray;
-use ecs::Render;
-use ecs::Transform;
-use ecs::System;
+//use ecs::Render;
+//use ecs::Transform;
+//use ecs::System;
 
 pub mod ecs;
 
@@ -55,21 +55,24 @@ fn main() {
 
     cm.dump();
 
-    println!("-Test-system-manipulation-------------------------------------------------");
+    //cm.add_component(pool.get(), 1);
+    //cm.add_component(pool.get(), 1.5);
 
-    let mut t = Transform::new();
-    t.add_entity(pool.get());
-    t.add_entity(pool.get());
-
-    let mut r = Render::new();
-    r.add_entity(pool.get());
-    r.add_entity(pool.get());
-
-    let systems: Vec<Box<dyn System>> = vec![Box::new(r), Box::new(t)] ;
-
-    for system in systems {
-        system.apply(&cm)
-    }
+//    println!("-Test-system-manipulation-------------------------------------------------");
+//
+//    let mut t = Transform::new();
+//    t.add_entity(pool.get());
+//    t.add_entity(pool.get());
+//
+//    let mut r = Render::new();
+//    r.add_entity(pool.get());
+//    r.add_entity(pool.get());
+//
+//    let systems: Vec<Box<dyn System>> = vec![Box::new(r), Box::new(t)] ;
+//
+//    for system in systems {
+//        system.apply(&cm)
+//    }
 
 }
 
