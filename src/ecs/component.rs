@@ -6,18 +6,17 @@ use std::fmt::Display;
 use std::any::TypeId;
 use std::any::Any;
 
-trait ComponentArrayIC {
-}
-
 pub struct ComponentArray<T: Display> {
+    name: &'static str,
     components: HashMap<Entity, T>,
 }
 
-impl<T:  Display> ComponentArrayIC for ComponentArray<T> {}
-
 impl<T:  Display> ComponentArray<T> {
-    pub fn new() -> ComponentArray<T> {
-        ComponentArray { components: HashMap::new() }
+    pub fn new(name: &'static str) -> ComponentArray<T> {
+        ComponentArray {
+            name,
+            components: HashMap::new(),
+        }
     }
 
     pub fn add(&mut self, entity: Entity, component: T) {
@@ -28,8 +27,8 @@ impl<T:  Display> ComponentArray<T> {
         self.components.get(entity).unwrap()
     }
 
-    pub fn dump(&mut self) {
-        println!("Dump:");
+    pub fn dump(&self) {
+        println!("Dump (type {:?}):", self.name);
         for (entity, component) in self.components.iter() {
             println!("entity: {}, component: {}", entity, component);
         }
@@ -38,7 +37,7 @@ impl<T:  Display> ComponentArray<T> {
 
 pub struct ComponentManager {
     component_types: HashSet<TypeId>,
-    component_arrays: HashMap<TypeId, Box<dyn ComponentArrayIC>>,
+    component_arrays: HashMap<TypeId, Box<dyn Any>>,
 }
 
 impl ComponentManager {
@@ -54,22 +53,21 @@ impl ComponentManager {
         self.component_arrays.insert(TypeId::of::<T>(), Box::new(component_array));
     }
 
-    pub fn add_component<T: Display + Any>(&self, entity: Entity, component: T) {
+    pub fn add_component<T: Display + Any>(&mut self, entity: Entity, component: T) {
         println!("Component added to ComponentManager");
 
         let id = TypeId::of::<T>();
         if self.component_types.contains(&id) {
             println!("We have this");
-            let array = self.component_arrays.get(&id).unwrap(); // 2. Find relevant component array
-            // array.add(entity, component)// 3. add passed component to the relevant array
+            let array = self.get_component_array();
+            array.add(entity, component);
+            array.dump();
         }
     }
 
-    // https://users.rust-lang.org/t/convert-generic-trait-t-back-to-struct/11581/2
-    // https://doc.rust-lang.org/std/boxed/struct.Box.html#method.downcast
-    fn get_component_array<T: Display + Any>(&self, component: T) -> ComponentArray<T> {
+    fn get_component_array<T: Display + Any>(&mut self) -> &mut ComponentArray<T> {
         let id = TypeId::of::<T>();
-        *self.component_arrays.get(&id).unwrap()
+        self.component_arrays.get_mut(&id).unwrap().downcast_mut::<ComponentArray<T>>().unwrap()
     }
 
     pub fn dump(&self) {
