@@ -9,7 +9,9 @@ use std::vec::Vec;
 
 pub mod ecs;
 
+// TODO EntitiesPool::get() should return Option/Result (read about Option and Result in book)
 // TODO: add unit tests
+// TODO: unit tests in separate files/modules
 
 fn main() {
     println!("Test entity pool");

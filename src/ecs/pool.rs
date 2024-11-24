@@ -34,15 +34,21 @@ impl EntitiesPool {
         self.available_entities.insert(entity);
         self.used_entities.remove(&entity);
     }
-
-    pub fn set_components(&mut self, entity: Entity, components: HashSet<ComponentType>) {
-        // TODO: add check if entity is alredy taken (it doesn't exists in available_entities)
-        if self.used_entities.contains(&entity) {
-            self.components.insert(entity, components).unwrap();
-        }
-    }
-    // TODO: add functions for adding and removing single components for entity,
-    //       so this will be modification ofr self.components, instead of setting it from
-    //       scratch as this is already done for set_components
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pool() {
+        let mut ep = EntitiesPool::new();
+        for _i in 0..MAX_ENTITIES-1 {
+            ep.get();
+        }
+
+        let last_e = ep.get();
+        ep.give_back(last_e);
+        assert_eq!(last_e, ep.get());
+    }
+}
