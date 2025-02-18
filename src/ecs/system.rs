@@ -8,7 +8,7 @@ use std::any::Any;
 
 
 pub trait System {
-    fn add_entity(&mut self, entity: Entity);
+    fn add(&mut self, entity: Entity);
     //fn remove_entity(entity: Entity);
 
     fn apply(&self, cm: &ComponentManager);
@@ -55,7 +55,7 @@ impl Render {
 }
 
 impl System for Render {
-    fn add_entity(&mut self, entity: Entity) {
+    fn add(&mut self, entity: Entity) {
         self.entities.insert(entity);
     }
 
@@ -78,7 +78,7 @@ impl Transform {
 }
 
 impl System for Transform {
-    fn add_entity(&mut self, entity: Entity) {
+    fn add(&mut self, entity: Entity) {
         self.entities.insert(entity);
     }
 

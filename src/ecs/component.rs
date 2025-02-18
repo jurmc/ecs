@@ -48,18 +48,13 @@ impl ComponentManager {
         }
     }
 
-    pub fn register<T: Display + Any>(&mut self, component_array: ComponentArray<T>) {
-        self.component_types.insert(TypeId::of::<T>());
-        self.component_arrays.insert(TypeId::of::<T>(), Box::new(component_array));
-    }
-
-    pub fn register_new<T: Display + Any>(&mut self) {
+    pub fn register<T: Display + Any>(&mut self) {
         self.component_types.insert(TypeId::of::<T>());
         let mut arr: ComponentArray<T>  = ComponentArray::new("coords");
         self.component_arrays.insert(TypeId::of::<T>(), Box::new(arr));
     }
 
-    pub fn add_component<T: Display + Any>(&mut self, entity: Entity, component: T) {
+    pub fn add<T: Display + Any>(&mut self, entity: Entity, component: T) {
         println!("Component added to ComponentManager");
 
         let id = TypeId::of::<T>();
