@@ -71,12 +71,14 @@ impl ComponentManager {
         }
     }
 
-    pub fn get_component_array<T: Display + Any>(&mut self) -> &mut ComponentArray<T> {
+    // Priv //////////////
+
+    fn get_component_array<T: Display + Any>(&mut self) -> &mut ComponentArray<T> {
         let id = TypeId::of::<T>();
         self.component_arrays.get_mut(&id).unwrap().downcast_mut::<ComponentArray<T>>().unwrap()
     }
 
-    pub fn dump(&self) {
+    fn dump(&self) {
         for c in self.component_types.iter() {
             println!("c: {:?}", c);
         }

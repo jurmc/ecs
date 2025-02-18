@@ -4,6 +4,8 @@ const MAX_ENTITIES: u32 = 100;
 type Entity = u32;
 type ComponentType = TypeId;
 
+pub use coordinator::Coordinator;
+
 pub use pool::EntitiesPool;
 
 pub use component::ComponentArray;
@@ -15,7 +17,7 @@ pub use system::SystemManager;
 pub use system::Render;
 pub use system::Transform;
 
+mod coordinator;
 mod pool;
 mod component;
 mod system;
-

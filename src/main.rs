@@ -1,3 +1,4 @@
+use ecs::Coordinator;
 use ecs::EntitiesPool;
 use ecs::ComponentManager;
 use ecs::ComponentArray;
@@ -29,29 +30,19 @@ fn main() {
     //some_fun2();
 }
 
-// TODO: extract coordinator to separate file
-struct Coordinator {
-    pool: EntitiesPool,
-    cm: ComponentManager,
-    sm: SystemManager,
-}
-
-impl Coordinator {
-    fn new() -> Coordinator {
-        Coordinator {
-            pool: EntitiesPool::new(),
-            cm: ComponentManager::new(),
-            sm: SystemManager::new(),
-        }
-    }
-}
-
 fn some_fun1() {
     println!("some_fun1()");
+    
+    // WIP: Create and user Coordinator
+    let mut c = Coordinator::new();
+    println!("Cooridnator created");
+    //c.register_component<>() 
+    //////////////////////
 
-    let mut pool = EntitiesPool::new();
+    let mut pool = c.pool;
+    let mut cm = c.cm;
+    let mut sm = c.sm;
 
-    let mut cm = ComponentManager::new();
     cm.register_new::<Coords>();
     cm.register_new::<i32>();
 
@@ -59,23 +50,12 @@ fn some_fun1() {
     let particle2 = pool.get();
 
     // Coords are tupels (x, y)
-    let mut coords_arr = cm.get_component_array::<Coords>();
-    coords_arr.add(particle1, Coords(0, 10));
-    coords_arr.add(particle2, Coords(2, 10));
+    cm.add_component(particle1, Coords(0, 10));
+    cm.add_component(particle2, Coords(2, 10));
 
     // Weight is just u32
-    let mut weights_arr = cm.get_component_array::<i32>();
-    weights_arr.add(particle1, 5);
-    weights_arr.add(particle1, 10);
-
-    let mut cm = ComponentManager::new();
-    //cm.register(coords_arr);
-    //cm.register(weights_arr);
-    // WIP: point of focus
-    cm.register_new::<i64>();
-    let arr = cm.get_component_array::<i64>();
-    let v: i64 = 16;
-    arr.add(pool.get(), v);
+    cm.add_component(particle1, 5);
+    cm.add_component(particle1, 10);
 
     // Systems
     let mut transform_sys = Transform::new();
@@ -86,19 +66,10 @@ fn some_fun1() {
     render_sys.add_entity(particle1);
     render_sys.add_entity(particle2);
 
-    let mut sm = SystemManager::new();
     sm.register(render_sys);
     sm.register(transform_sys);
 
     sm.kick_all_systems(&cm);
-
-    // WIP: Create and user Coordinator
-    let mut c = Coordinator::new();
-    println!("Cooridnator created");
-    let entity1 = c.pool.get();
-    //c.register_component<>() 
-
-
 
 }
 
