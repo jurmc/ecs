@@ -31,7 +31,7 @@ fn main() {
 
 fn some_fun1() {
     println!("some_fun1()");
-    
+
     // WIP: Create and user Coordinator
     let mut c = Coordinator::new();
 
@@ -43,7 +43,7 @@ fn some_fun1() {
 
     c.add_component(particle1, Coords(0, 10));
     c.add_component(particle2, Coords(2, 10));
-    
+
     c.add_component(particle1, 5);
     c.add_component(particle1, 10);
 

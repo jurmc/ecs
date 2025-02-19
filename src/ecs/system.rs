@@ -8,8 +8,8 @@ use std::any::Any;
 
 
 pub trait System {
-    fn add(&mut self, entity: Entity);
-    //fn remove_entity(entity: Entity);
+    fn add(&mut self, e: Entity);
+    fn remove(&mut self, e: Entity);
 
     fn apply(&self, cm: &ComponentManager);
 }
@@ -41,8 +41,65 @@ impl SystemManager {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct TestSystem {
+        entities: HashSet<Entity>
+    }
+
+    impl TestSystem {
+        fn new() -> TestSystem {
+            TestSystem { entities: HashSet::new() }
+        }
+
+        fn get_entities(&mut self) -> &HashSet<Entity> {
+            &self.entities
+        }
+    }
+
+    impl System for TestSystem {
+        fn add(&mut self, e: Entity) {
+            self.entities.insert(e);
+        }
+
+        fn remove(&mut self, e: Entity) {
+            self.entities.remove(&e);
+        }
+
+        fn apply(&self, cm: &ComponentManager) {
+        }
+    }
+
+    #[test]
+    fn test_system() {
+        let e1: Entity = 1;
+        let e2: Entity = 2;
+
+        let mut s = TestSystem::new();
+        s.add(e1);
+        s.add(e2);
+        s.remove(e1);
+
+        let expected: HashSet<Entity> = vec![e2].into_iter().collect();
+        assert_eq!(expected, *s.get_entities());
+    }
+
+    #[test]
+    fn test_system_manager() {
+        let mut sm = SystemManager::new();
+        let s = TestSystem::new();
+
+        sm.register(s);
+        // TODO: point of focus
+        sm.set_components_for_system(HashSet<TypeId-orSignatures>);
+    }
+}
+
 //
 // System implementations
+// TODO: move system implementations out of this module
 
 pub struct Render {
     entities: HashSet<Entity>
@@ -55,8 +112,11 @@ impl Render {
 }
 
 impl System for Render {
-    fn add(&mut self, entity: Entity) {
-        self.entities.insert(entity);
+    fn add(&mut self, e: Entity) {
+        self.entities.insert(e);
+    }
+    fn remove(&mut self, e: Entity) {
+        // TODO: not implemented
     }
 
     fn apply(&self, cm: &ComponentManager) {
@@ -78,8 +138,12 @@ impl Transform {
 }
 
 impl System for Transform {
-    fn add(&mut self, entity: Entity) {
-        self.entities.insert(entity);
+    fn add(&mut self, e: Entity) {
+        self.entities.insert(e);
+    }
+
+    fn remove(&mut self, e: Entity) {
+        // TODO: not implemented
     }
 
     fn apply(&self, cm: &ComponentManager) {
