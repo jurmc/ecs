@@ -19,6 +19,7 @@ pub mod ecs;
 
 struct Coords(i32, i32);
 
+// TODO: relax this requirment that Component has to imple Display (maybe)
 impl fmt::Display for Coords {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Coords {} {}", self.0, self.1)
