@@ -23,12 +23,12 @@ impl<T:  Display> ComponentArray<T> {
         self.components.insert(entity, component);
     }
 
-    pub fn get(&mut self, entity: &Entity) -> &T {
-        self.components.get(entity).unwrap()
+    pub fn get(&mut self, entity: &Entity) -> Option<&T> {
+        self.components.get(entity)
     }
 
-    pub fn remove(&mut self, entity: &Entity) {
-        self.components.remove(entity).unwrap();
+    pub fn remove(&mut self, entity: &Entity) -> Option<T> {
+        self.components.remove(entity)
     }
 
     pub fn dump(&self) {
@@ -95,11 +95,18 @@ mod tests {
         let e2: Entity = 2;
         a.add(e1, "one");
         a.add(e2, "two");
-        assert_eq!(&"one", a.get(&e1));
-        assert_eq!(&"two", a.get(&e2));
 
-        let e3: Entity = 3;
-        //a.get(&e3);
+        assert_eq!(Some(&"one"), a.get(&e1));
+        assert_eq!(Some(&"two"), a.get(&e2));
+
+        assert_eq!(Some("one"), a.remove(&e1));
+        assert_eq!(None, a.get(&e1));
+        assert_eq!(None, a.remove(&e1));
+        assert_eq!(Some(&"two"), a.get(&e2));
+    }
+
+    #[test]
+    fn test_component_manager() {
     }
 
 }
