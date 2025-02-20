@@ -27,6 +27,10 @@ impl<T:  Display> ComponentArray<T> {
         self.components.get(entity).unwrap()
     }
 
+    pub fn remove(&mut self, entity: &Entity) {
+        self.components.remove(entity).unwrap();
+    }
+
     pub fn dump(&self) {
         println!("Dump (type {:?}):", self.name);
         for (entity, component) in self.components.iter() {
@@ -80,3 +84,22 @@ impl ComponentManager {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_component_array() {
+        let mut a = ComponentArray::new("test_array");
+        let e1: Entity = 1;
+        let e2: Entity = 2;
+        a.add(e1, "one");
+        a.add(e2, "two");
+        assert_eq!(&"one", a.get(&e1));
+        assert_eq!(&"two", a.get(&e2));
+
+        let e3: Entity = 3;
+        //a.get(&e3);
+    }
+
+}

@@ -93,7 +93,7 @@ mod tests {
 
         sm.register(s);
         // TODO: point of focus
-        sm.set_components_for_system(HashSet<TypeId-orSignatures>);
+        //sm.set_components_for_system(HashSet<TypeId-orSignatures>);
     }
 }
 
