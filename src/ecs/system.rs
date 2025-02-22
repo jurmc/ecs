@@ -35,6 +35,10 @@ impl SystemManager {
         sys_id
     }
 
+    pub fn apply(&self, id: TypeId, cm: &ComponentManager) {
+        self.systems.get(&id).unwrap().apply(cm)
+    }
+
     // TODO: we rather iterate over containted systems, this function will be removed
     pub fn kick_all_systems(&self, cm: &ComponentManager) {
         for (_, system) in self.systems.iter() {
@@ -99,11 +103,22 @@ mod tests {
 
     #[test]
     fn test_system_manager() {
+        let e: Entity = 1;
+
+        let mut cm = ComponentManager::new();
+        cm.register::<i32>();
+        cm.add(e, "abc");
+
         let mut sm = SystemManager::new();
         let s = TestSystem::new();
-
         let sys_id = sm.register(s);
+        sm.apply(sys_id, &cm);
+        build fail
         // TODO: point of focus
+        // we have one entity that has registered i32 component
+        // if we 'apply' one our system we'd like that this system will
+        // pull i32 component associated with entiy 1 and add something to id
+        // then we check te result on i32 component of entity
     }
 }
 
