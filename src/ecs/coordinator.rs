@@ -32,18 +32,18 @@ impl Coordinator {
     pub fn register_component<T: Display + Any>(&mut self) {
         self.cm.register::<T>();
     }
-    
+
     pub fn add_component<T: Display + Any>(&mut self, e: Entity, c: T) {
         self.cm.add::<T>(e, c);
     }
-    
+
     // Systems
     pub fn register_system<T: System + Any>(&mut self, s: T) {
         self.sm.register(s);
     }
 
-    pub fn kick_all_systems(&self) {
-        self.sm.kick_all_systems(&self.cm);
+    pub fn kick_all_systems(&mut self) {
+        self.sm.kick_all_systems(&mut self.cm);
     }
     // TODO
 }

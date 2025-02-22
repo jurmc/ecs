@@ -12,7 +12,7 @@ pub trait System {
     fn remove(&mut self, e: Entity);
 
     fn get_component_types(&self) -> &HashSet<TypeId>;
-    fn apply(&self, cm: &ComponentManager);
+    fn apply(&self, cm: &mut ComponentManager);
 }
 
 pub struct SystemManager {
@@ -35,12 +35,12 @@ impl SystemManager {
         sys_id
     }
 
-    pub fn apply(&self, id: TypeId, cm: &ComponentManager) {
+    pub fn apply(&self, id: TypeId, cm: &mut ComponentManager) {
         self.systems.get(&id).unwrap().apply(cm)
     }
 
     // TODO: we rather iterate over containted systems, this function will be removed
-    pub fn kick_all_systems(&self, cm: &ComponentManager) {
+    pub fn kick_all_systems(&self, cm: &mut ComponentManager) {
         for (_, system) in self.systems.iter() {
             println!("some system will be kicked");
             system.apply(cm)
@@ -83,7 +83,11 @@ mod tests {
             &self.component_types
         }
 
-        fn apply(&self, cm: &ComponentManager) {
+        fn apply(&self, cm: &mut ComponentManager) {
+            for e in self.entities.iter() {
+                let v = cm.get::<i32>(e).unwrap();
+                *v += 1;
+            }
         }
     }
 
@@ -103,22 +107,26 @@ mod tests {
 
     #[test]
     fn test_system_manager() {
-        let e: Entity = 1;
+        let e1: Entity = 1; // Will become a part of TestSystem
+        let e2: Entity = 2; // Will not be a part of TestSystem
+        let v1: i32 = 1;
+        let mut v2: i32 = 2;
 
         let mut cm = ComponentManager::new();
         cm.register::<i32>();
-        cm.add(e, "abc");
+        cm.add(e1, v1);
+        cm.add(e2, v2);
 
         let mut sm = SystemManager::new();
-        let s = TestSystem::new();
+        let mut s = TestSystem::new();
+        s.add(e1);
+
         let sys_id = sm.register(s);
-        sm.apply(sys_id, &cm);
-        build fail
-        // TODO: point of focus
-        // we have one entity that has registered i32 component
-        // if we 'apply' one our system we'd like that this system will
-        // pull i32 component associated with entiy 1 and add something to id
-        // then we check te result on i32 component of entity
+
+        sm.apply(sys_id, &mut cm);
+
+        assert_eq!(Some(&mut (v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem"); 
+        assert_eq!(Some(&mut (v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
     }
 }
 
@@ -152,7 +160,7 @@ impl System for Render {
         &self.component_types
     }
 
-    fn apply(&self, cm: &ComponentManager) {
+    fn apply(&self, cm: &mut ComponentManager) {
         println!("Apply for Render");
         for e in self.entities.iter() {
             println!(" e: {}", e);
@@ -187,7 +195,7 @@ impl System for Transform {
         &self.component_types
     }
 
-    fn apply(&self, cm: &ComponentManager) {
+    fn apply(&self, cm: &mut ComponentManager) {
         println!("Apply for Transform");
         for e in self.entities.iter() {
             println!(" e: {}", e);

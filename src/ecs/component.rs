@@ -25,8 +25,8 @@ impl<T:  Display> ComponentArray<T> {
         self.components.insert(entity, component);
     }
 
-    pub fn get(&mut self, entity: &Entity) -> Option<&T> {
-        self.components.get(entity)
+    pub fn get(&mut self, entity: &Entity) -> Option<&mut T> {
+        self.components.get_mut(entity)
     }
 
     pub fn remove(&mut self, entity: &Entity) -> Option<T> {
@@ -71,7 +71,7 @@ impl ComponentManager {
         }
     }
 
-    pub fn get<T: Display + Any>(&mut self, entity: &Entity) -> Option<&T> {
+    pub fn get<T: Display + Any>(&mut self, entity: &Entity) -> Option<&mut T> {
         let array = self.get_component_array();
         array.get(&entity)
     }
@@ -100,13 +100,13 @@ mod tests {
         a.add(e1, "one");
         a.add(e2, "two");
 
-        assert_eq!(Some(&"one"), a.get(&e1));
-        assert_eq!(Some(&"two"), a.get(&e2));
+        assert_eq!(Some(&mut "one"), a.get(&e1));
+        assert_eq!(Some(&mut "two"), a.get(&e2));
 
         assert_eq!(Some("one"), a.remove(&e1));
         assert_eq!(None, a.get(&e1));
         assert_eq!(None, a.remove(&e1));
-        assert_eq!(Some(&"two"), a.get(&e2));
+        assert_eq!(Some(&mut "two"), a.get(&e2));
     }
 
     #[derive(Debug,PartialEq)]
@@ -136,10 +136,10 @@ mod tests {
 
         cm.add(e2, 2);
 
-        assert_eq!(Some(&1), cm.get::<i32>(&e1));
-        assert_eq!(Some(&2), cm.get::<i32>(&e2));
+        assert_eq!(Some(&mut 1), cm.get::<i32>(&e1));
+        assert_eq!(Some(&mut 2), cm.get::<i32>(&e2));
 
-        assert_eq!(Some(&Coords { x: 5, y: 10 }), cm.get::<Coords>(&e1));
+        assert_eq!(Some(&mut Coords { x: 5, y: 10 }), cm.get::<Coords>(&e1));
         assert_eq!(None, cm.get::<Coords>(&e2));
 
         cm.remove::<i32>(&e1);
