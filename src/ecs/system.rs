@@ -11,25 +11,28 @@ pub trait System {
     fn add(&mut self, e: Entity);
     fn remove(&mut self, e: Entity);
 
+    fn get_component_types(&self) -> &HashSet<TypeId>;
     fn apply(&self, cm: &ComponentManager);
 }
 
 pub struct SystemManager {
-    system_types: HashSet<TypeId>,
-    systems: HashMap<TypeId, Box<dyn System>>,
+    system_component_types: HashMap<TypeId, HashSet<TypeId>>, // TODO: 2nd TypeId could be aliaed to CompType or sth alike
+    systems               : HashMap<TypeId, Box<dyn System>>,
 }
 
 impl SystemManager {
     pub fn new() -> SystemManager{
         SystemManager {
-            system_types: HashSet::new(),
+            system_component_types: HashMap::new(),
             systems: HashMap::new(),
         }
     }
 
-    pub fn register<T: System + Any>(&mut self, system: T) {
-        self.system_types.insert(TypeId::of::<T>());
-        self.systems.insert(TypeId::of::<T>(), Box::new(system));
+    pub fn register<T: System + Any>(&mut self, system: T) -> TypeId {
+        let sys_id = TypeId::of::<T>();
+        self.system_component_types.insert(sys_id, system.get_component_types().clone());
+        self.systems.insert(sys_id, Box::new(system));
+        sys_id
     }
 
     // TODO: we rather iterate over containted systems, this function will be removed
@@ -46,12 +49,16 @@ mod tests {
     use super::*;
 
     struct TestSystem {
-        entities: HashSet<Entity>
+        entities: HashSet<Entity>,
+        component_types: HashSet<TypeId>,
     }
 
     impl TestSystem {
         fn new() -> TestSystem {
-            TestSystem { entities: HashSet::new() }
+            TestSystem {
+                entities: HashSet::new(),
+                component_types: HashSet::new(),
+            }
         }
 
         fn get_entities(&mut self) -> &HashSet<Entity> {
@@ -66,6 +73,10 @@ mod tests {
 
         fn remove(&mut self, e: Entity) {
             self.entities.remove(&e);
+        }
+
+        fn get_component_types(&self) -> &HashSet<TypeId> {
+            &self.component_types
         }
 
         fn apply(&self, cm: &ComponentManager) {
@@ -91,9 +102,8 @@ mod tests {
         let mut sm = SystemManager::new();
         let s = TestSystem::new();
 
-        sm.register(s);
+        let sys_id = sm.register(s);
         // TODO: point of focus
-        //sm.set_components_for_system(HashSet<TypeId-orSignatures>);
     }
 }
 
@@ -102,12 +112,16 @@ mod tests {
 // TODO: move system implementations out of this module
 
 pub struct Render {
-    entities: HashSet<Entity>
+    entities: HashSet<Entity>,
+    component_types: HashSet<TypeId>,
 }
 
 impl Render {
     pub fn new() -> Render {
-        Render { entities: HashSet::new() }
+        Render {
+            entities: HashSet::new(),
+            component_types: HashSet::new(),
+        }
     }
 }
 
@@ -119,6 +133,10 @@ impl System for Render {
         // TODO: not implemented
     }
 
+    fn get_component_types(&self) -> &HashSet<TypeId> {
+        &self.component_types
+    }
+
     fn apply(&self, cm: &ComponentManager) {
         println!("Apply for Render");
         for e in self.entities.iter() {
@@ -128,12 +146,16 @@ impl System for Render {
 }
 
 pub struct Transform {
-    entities: HashSet<Entity>
+    entities: HashSet<Entity>,
+    component_types: HashSet<TypeId>,
 }
 
 impl Transform {
     pub fn new() -> Transform {
-        Transform { entities: HashSet::new() }
+        Transform {
+            entities: HashSet::new(),
+            component_types: HashSet::new(),
+        }
     }
 }
 
@@ -144,6 +166,10 @@ impl System for Transform {
 
     fn remove(&mut self, e: Entity) {
         // TODO: not implemented
+    }
+
+    fn get_component_types(&self) -> &HashSet<TypeId> {
+        &self.component_types
     }
 
     fn apply(&self, cm: &ComponentManager) {
