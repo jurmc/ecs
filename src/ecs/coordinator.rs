@@ -48,3 +48,9 @@ impl Coordinator {
     // TODO
 }
 
+
+build fail
+// TODO: point of focus
+// strart UT'ing of coordinator
+// ...
+
