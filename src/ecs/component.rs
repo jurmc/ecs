@@ -21,28 +21,29 @@ impl<T:  Display> ComponentArray<T> {
         }
     }
 
-    pub fn add(&mut self, entity: Entity, component: T) {
-        self.components.insert(entity, component);
+    pub fn add(&mut self, e: Entity, component: T) {
+        self.components.insert(e, component);
     }
 
-    pub fn get(&mut self, entity: &Entity) -> Option<&mut T> {
-        self.components.get_mut(entity)
+    pub fn get(&mut self, e: &Entity) -> Option<&mut T> {
+        self.components.get_mut(e)
     }
 
-    pub fn remove(&mut self, entity: &Entity) -> Option<T> {
-        self.components.remove(entity)
+    pub fn remove(&mut self, e: &Entity) -> Option<T> {
+        self.components.remove(e)
     }
 
     pub fn dump(&self) {
         println!("Dump (type {:?}):", self.name);
-        for (entity, component) in self.components.iter() {
-            println!("entity: {}, component: {}", entity, component);
+        for (e, component) in self.components.iter() {
+            println!("e: {}, component: {}", e, component);
         }
     }
 }
 
 pub struct ComponentManager {
-    component_types: HashSet<TypeId>,
+    component_types: HashSet<TypeId>, // TODO: we might not need it... TypeId key from
+                                      // component_arrays map should be enough
     component_arrays: HashMap<TypeId, Box<dyn Any>>,
 }
 
@@ -60,26 +61,28 @@ impl ComponentManager {
         self.component_arrays.insert(TypeId::of::<T>(), Box::new(arr));
     }
 
-    pub fn add<T: Display + Any>(&mut self, entity: Entity, component: T) {
+    pub fn add<T: Display + Any>(&mut self, e: Entity, component: T) {
         let id = TypeId::of::<T>();
         if self.component_types.contains(&id) {
             let array = self.get_component_array();
-            array.add(entity, component);
+            array.add(e, component);
             array.dump();
         } else {
             panic!("Component type shoud be registered prior to its use");
         }
     }
 
-    pub fn get<T: Display + Any>(&mut self, entity: &Entity) -> Option<&mut T> {
+    pub fn get<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
         let array = self.get_component_array();
-        array.get(&entity)
+        array.get(&e)
     }
 
-    pub fn remove<T: Display + Any>(&mut self, entity: &Entity) -> Option<T> {
+    pub fn remove<T: Display + Any>(&mut self, e: &Entity) -> Option<T> {
         let array = self.get_component_array();
-        array.remove(entity)
+        array.remove(e)
     }
+
+    // Priv
 
     fn get_component_array<T: Display + Any>(&mut self) -> &mut ComponentArray<T> {
         let id = TypeId::of::<T>();
@@ -115,7 +118,8 @@ mod tests {
         y: i32,
     }
 
-    // TODO: relax this requirment that Component has to imple Display (maybe)
+    // TODO: relax this requirment that says Component has to implement Display (maybe this is
+    // possible)
     impl fmt::Display for Coords {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "coords display (TODO: to be removed)")

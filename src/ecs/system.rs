@@ -38,7 +38,7 @@ impl SystemManager {
         sys_id
     }
 
-    pub fn add_entity(&mut self, e: Entity, component_types: &HashSet<TypeId>) {
+    pub fn add_component(&mut self, e: Entity, component_types: &HashSet<TypeId>) {
         for (_, sys) in self.systems.iter_mut() {
             let sys_component_types = sys.get_component_types();
             let fit_for_sys = sys_component_types.is_subset(component_types);
@@ -133,7 +133,7 @@ mod tests {
         let mut sm = SystemManager::new();
         let s = TestSystem::new();
         let sys_id = sm.register(s);
-        sm.add_entity(e1, &HashSet::from_iter(vec![TypeId::of::<i32>()]));
+        sm.add_component(e1, &HashSet::from_iter(vec![TypeId::of::<i32>()]));
 
         sm.apply(&sys_id, &mut cm);
         assert_eq!(Some(&mut (v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem"); 

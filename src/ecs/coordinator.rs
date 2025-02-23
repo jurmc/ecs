@@ -37,9 +37,13 @@ impl Coordinator {
 
     pub fn add_component<T: Display + Any>(&mut self, e: Entity, c: T) {
         self.cm.add::<T>(e, c); // TODO: do we need ::<T> in this call instance?
-        // TODO: after adding component we need to update system ids in registered systems too
-        println!("To which systems this entity has to be added? e: {}", e);
-        //self.sm.add(&e, c);
+
+        // TODO: We need to get HashSet of compoent types currently
+        // associated with entity from ComponentManager and pass it along
+        // entity to SystemManager
+        //
+        let temporary_FIXME = HashSet::from_iter(vec![TypeId::of::<u32>()].into_iter());
+        self.sm.add_component(e, &temporary_FIXME);
     }
 
     pub fn get_component<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
@@ -119,15 +123,13 @@ mod tests {
         c.add_component(e1, v1);
         c.add_component(e2, v2);
 
-        let s = SystemU32::new();
-//        let sys_id = c.register_system(s);
         c.apply(&sys_id);
 
 // TODO: point of focus
-//        let v1_updated = c.get_component::<u32>(&e1);
-//        assert_eq!(Some(&mut (v1+1)), v1_updated);
-//        let v2_updated = c.get_component::<u32>(&e2);
-//        assert_eq!(Some(&mut (v2+1)), v2_updated);
+        let v1_updated = c.get_component::<u32>(&e1);
+        assert_eq!(Some(&mut (v1+1)), v1_updated);
+        let v2_updated = c.get_component::<u32>(&e2);
+        assert_eq!(Some(&mut (v2+1)), v2_updated);
     }
 }
 
