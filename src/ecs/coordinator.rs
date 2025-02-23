@@ -4,8 +4,10 @@ use crate::ComponentManager;
 use crate::SystemManager;
 use crate::ecs::System;
 
+use std::collections::HashSet;
 use std::fmt::Display;
 use std::any::Any;
+use std::any::TypeId;
 
 
 pub struct Coordinator {
@@ -38,8 +40,12 @@ impl Coordinator {
     }
 
     // Systems
-    pub fn register_system<T: System + Any>(&mut self, s: T) {
-        self.sm.register(s);
+    pub fn register_system<T: System + Any>(&mut self, s: T) -> TypeId {
+        self.sm.register(s)
+    }
+
+    pub fn apply(&mut self, id: TypeId) {
+        self.sm.apply(id, &mut self.cm);
     }
 
     pub fn kick_all_systems(&mut self) {
@@ -55,19 +61,57 @@ mod tests {
 // TODO: point of focus
 // strart UT'ing of coordinator
 // ...
-//
-//    #[test]
-//    fn test_coordinator_for_simple_comonent() {
-//        let mut c = Coordinator::new();
-//
-//        let e1 = c.get_entity();
-//        let e2 = c.get_entity();
-//
-//        c.register_component::<i32>();
-//        c.add_component(e1, 1);
-//        c.add_component(e2, 1);
-//
-//    }
+
+    struct SystemU32 {
+        entities: HashSet<Entity>,
+        component_types: HashSet<TypeId>,
+    }
+
+    impl SystemU32 {
+        fn new() -> SystemU32 {
+            SystemU32 {
+                entities: HashSet::new(),
+                component_types: vec![TypeId::of::<u32>()].into_iter().collect(),
+            }
+        }
+    }
+
+    impl System for SystemU32{
+        fn add(&mut self, e: Entity) {
+            self.entities.insert(e);
+        }
+
+        fn remove(&mut self, e: Entity) {
+            self.entities.remove(&e);
+        }
+
+        fn get_component_types(&self) -> &HashSet<TypeId> {
+            &self.component_types
+        }
+
+        fn apply(&self, cm: &mut ComponentManager) {
+            for e in self.entities.iter() {
+                let v = cm.get::<u32>(e).unwrap();
+                *v += 1;
+            }
+        }
+    }
+
+    #[test]
+    fn test_coordinator_for_simple_component() {
+        let mut c = Coordinator::new();
+
+        let e1 = c.get_entity();
+        let e2 = c.get_entity();
+
+        c.register_component::<i32>();
+        c.add_component(e1, 1);
+        c.add_component(e2, 1);
+
+        let s = SystemU32::new();
+        let sys_id = c.register_system(s);
+        c.apply(sys_id);
+    }
 }
 
 
