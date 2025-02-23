@@ -35,6 +35,9 @@ impl SystemManager {
         sys_id
     }
 
+    pub fn add(&self, e: TypeId) {
+    }
+
     pub fn apply(&self, id: &TypeId, cm: &mut ComponentManager) {
         self.systems.get(&id).unwrap().apply(cm)
     }
@@ -119,7 +122,8 @@ mod tests {
 
         let mut sm = SystemManager::new();
         let mut s = TestSystem::new();
-        s.add(e1);
+        //s.add(e1);
+        sm.add(e1);
 
         let sys_id = sm.register(s);
 
