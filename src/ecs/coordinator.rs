@@ -39,6 +39,10 @@ impl Coordinator {
         self.cm.add::<T>(e, c);
     }
 
+    pub fn get_component<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
+        self.cm.get(e)
+    }
+
     // Systems
     pub fn register_system<T: System + Any>(&mut self, s: T) -> TypeId {
         self.sm.register(s)
@@ -57,10 +61,6 @@ impl Coordinator {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-// TODO: point of focus
-// strart UT'ing of coordinator
-// ...
 
     struct SystemU32 {
         entities: HashSet<Entity>,
@@ -111,6 +111,10 @@ mod tests {
         let s = SystemU32::new();
         let sys_id = c.register_system(s);
         c.apply(&sys_id);
+
+// TODO: point of focus
+// TODO: get this component (afte being updated) and check update
+        //let c1 = c.get
     }
 }
 
