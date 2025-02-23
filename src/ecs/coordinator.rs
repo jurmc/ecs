@@ -36,13 +36,10 @@ impl Coordinator {
     }
 
     pub fn add_component<T: Display + Any>(&mut self, e: Entity, c: T) {
-        self.cm.add::<T>(e, c);
+        self.cm.add::<T>(e, c); // TODO: do we need ::<T> in this call instance?
         // TODO: after adding component we need to update system ids in registered systems too
         println!("To which systems this entity has to be added? e: {}", e);
-        // TODO: 
-        //for s in self.sm.iter() {
-        //    println!("System: {:?}:", s);
-        //}
+        //self.sm.add(&e, c);
     }
 
     pub fn get_component<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
@@ -122,7 +119,7 @@ mod tests {
         c.add_component(e1, v1);
         c.add_component(e2, v2);
 
-//        let s = SystemU32::new();
+        let s = SystemU32::new();
 //        let sys_id = c.register_system(s);
         c.apply(&sys_id);
 

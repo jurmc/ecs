@@ -16,7 +16,10 @@ pub trait System {
 }
 
 pub struct SystemManager {
-    system_component_types: HashMap<TypeId, HashSet<TypeId>>, // TODO: 2nd TypeId could be aliaed to CompType or sth alike
+    system_component_types: HashMap<TypeId, HashSet<TypeId>>, // TODO: 2nd TypeId could be aliaed to CompType or sth alike,
+                                                              // more generaly, it'd more clear if
+                                                              // we have ComponetType alias and
+                                                              // SystemType alias
     systems               : HashMap<TypeId, Box<dyn System>>,
 }
 
@@ -35,7 +38,14 @@ impl SystemManager {
         sys_id
     }
 
-    pub fn add(&self, e: TypeId) {
+    pub fn add_entity(&mut self, e: Entity, component_types: &HashSet<TypeId>) {
+        for (_, sys) in self.systems.iter_mut() {
+            let sys_component_types = sys.get_component_types();
+            let fit_for_sys = sys_component_types.is_subset(component_types);
+            if fit_for_sys {
+                sys.add(e);
+            }
+        }
     }
 
     pub fn apply(&self, id: &TypeId, cm: &mut ComponentManager) {
@@ -121,16 +131,18 @@ mod tests {
         cm.add(e2, v2);
 
         let mut sm = SystemManager::new();
-        let mut s = TestSystem::new();
-        //s.add(e1);
-        sm.add(e1);
-
+        let s = TestSystem::new();
         let sys_id = sm.register(s);
+        sm.add_entity(e1, &HashSet::from_iter(vec![TypeId::of::<i32>()]));
 
         sm.apply(&sys_id, &mut cm);
-
         assert_eq!(Some(&mut (v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem"); 
         assert_eq!(Some(&mut (v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
+
+        // TODO: SystemManager works fine as long as system is registered before entity with
+        // relevant componets is added. We have to supplement  sm.register() in a way that all
+        // existig entities managed by SM will be checked if they sghould be added to newly added
+        // system
     }
 }
 

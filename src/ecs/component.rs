@@ -61,8 +61,6 @@ impl ComponentManager {
     }
 
     pub fn add<T: Display + Any>(&mut self, entity: Entity, component: T) {
-        println!("Component added to ComponentManager");
-
         let id = TypeId::of::<T>();
         if self.component_types.contains(&id) {
             let array = self.get_component_array();
