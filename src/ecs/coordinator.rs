@@ -42,8 +42,8 @@ impl Coordinator {
         // associated with entity from ComponentManager and pass it along
         // entity to SystemManager
         //
-        let temporary_FIXME = HashSet::from_iter(vec![TypeId::of::<u32>()].into_iter());
-        self.sm.add_component(e, &temporary_FIXME);
+        //let temporary_FIXME = HashSet::from_iter(vec![TypeId::of::<u32>()].into_iter());
+        //self.sm.add_component(e, &temporary_FIXME);
     }
 
     pub fn get_component<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
@@ -120,12 +120,13 @@ mod tests {
         c.register_component::<u32>();
         let mut v1: u32 = 1;
         let mut v2: u32 = 1;
-        c.add_component(e1, v1);
-        c.add_component(e2, v2);
+        // TODO: point of focus
+        c.add_component(e1, v1); // TODO: not fully implemented
+        c.add_component(e2, v2); // TODO: not fully implemented
 
         c.apply(&sys_id);
 
-// TODO: point of focus
+        // TODO: point of focus
         let v1_updated = c.get_component::<u32>(&e1);
         assert_eq!(Some(&mut (v1+1)), v1_updated);
         let v2_updated = c.get_component::<u32>(&e2);
