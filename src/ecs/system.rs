@@ -35,7 +35,7 @@ impl SystemManager {
         sys_id
     }
 
-    pub fn apply(&self, id: TypeId, cm: &mut ComponentManager) {
+    pub fn apply(&self, id: &TypeId, cm: &mut ComponentManager) {
         self.systems.get(&id).unwrap().apply(cm)
     }
 
@@ -123,7 +123,7 @@ mod tests {
 
         let sys_id = sm.register(s);
 
-        sm.apply(sys_id, &mut cm);
+        sm.apply(&sys_id, &mut cm);
 
         assert_eq!(Some(&mut (v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem"); 
         assert_eq!(Some(&mut (v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");

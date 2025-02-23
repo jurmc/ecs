@@ -44,8 +44,8 @@ impl Coordinator {
         self.sm.register(s)
     }
 
-    pub fn apply(&mut self, id: TypeId) {
-        self.sm.apply(id, &mut self.cm);
+    pub fn apply(&mut self, id: &TypeId) {
+        self.sm.apply(&id, &mut self.cm);
     }
 
     pub fn kick_all_systems(&mut self) {
@@ -110,7 +110,7 @@ mod tests {
 
         let s = SystemU32::new();
         let sys_id = c.register_system(s);
-        c.apply(sys_id);
+        c.apply(&sys_id);
     }
 }
 
