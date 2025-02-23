@@ -68,6 +68,8 @@ impl ComponentManager {
             let array = self.get_component_array();
             array.add(entity, component);
             array.dump();
+        } else {
+            panic!("Component type shoud be registered prior to its use");
         }
     }
 
@@ -146,6 +148,14 @@ mod tests {
         cm.remove::<Coords>(&e1);
         assert_eq!(None, cm.get::<i32>(&e1));
         assert_eq!(None, cm.get::<Coords>(&e1));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_cm_panics_if_entity_added_without_prior_registration() {
+        let mut cm = ComponentManager::new();
+        let e: Entity = 1;
+        cm.add(e, 3.14);
     }
 
 }

@@ -48,9 +48,26 @@ impl Coordinator {
     // TODO
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-build fail
 // TODO: point of focus
 // strart UT'ing of coordinator
 // ...
+//
+//    #[test]
+//    fn test_coordinator_for_simple_comonent() {
+//        let mut c = Coordinator::new();
+//
+//        let e1 = c.get_entity();
+//        let e2 = c.get_entity();
+//
+//        c.register_component::<i32>();
+//        c.add_component(e1, 1);
+//        c.add_component(e2, 1);
+//
+//    }
+}
+
 
