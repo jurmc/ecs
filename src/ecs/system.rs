@@ -38,7 +38,12 @@ impl SystemManager {
         sys_id
     }
 
-    pub fn add_component(&mut self, e: Entity, component_types: &HashSet<TypeId>) {
+    pub fn add_component(&mut self, e: Entity, component_types: &HashSet<TypeId>) { // TODO: this
+                                                                                    // method
+                                                                                    // should
+                                                                                    // rather be
+                                                                                    // called
+                                                                                    // update_components?
         for (_, sys) in self.systems.iter_mut() {
             let sys_component_types = sys.get_component_types();
             let fit_for_sys = sys_component_types.is_subset(component_types);

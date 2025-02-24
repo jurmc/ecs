@@ -36,14 +36,17 @@ impl Coordinator {
     }
 
     pub fn add_component<T: Display + Any>(&mut self, e: Entity, c: T) {
+        self.pool.add_component_type::<T>(e);
         self.cm.add::<T>(e, c); // TODO: do we need ::<T> in this call instance?
 
-        // TODO: We need to get HashSet of compoent types currently
-        // associated with entity from ComponentManager and pass it along
-        // entity to SystemManager
-        //
-        //let temporary_FIXME = HashSet::from_iter(vec![TypeId::of::<u32>()].into_iter());
-        //self.sm.add_component(e, &temporary_FIXME);
+        let component_types_for_entity = self.pool.get_component_types(e);
+        match component_types_for_entity {
+            Some(component_types_for_entity) =>
+                self.sm.add_component(e, component_types_for_entity),
+                None => {
+                    // TODO: If let might be bettre, we're not interestend in handling None
+                }
+        }
     }
 
     pub fn get_component<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
@@ -118,15 +121,13 @@ mod tests {
         let e2 = c.get_entity();
 
         c.register_component::<u32>();
-        let mut v1: u32 = 1;
-        let mut v2: u32 = 1;
-        // TODO: point of focus
-        c.add_component(e1, v1); // TODO: not fully implemented
-        c.add_component(e2, v2); // TODO: not fully implemented
+        let v1: u32 = 1;
+        let v2: u32 = 1;
 
+        c.add_component(e1, v1);
+        c.add_component(e2, v2);
         c.apply(&sys_id);
 
-        // TODO: point of focus
         let v1_updated = c.get_component::<u32>(&e1);
         assert_eq!(Some(&mut (v1+1)), v1_updated);
         let v2_updated = c.get_component::<u32>(&e2);

@@ -10,7 +10,7 @@ use std::any::Any;
 pub struct EntitiesPool {
     available_entities: HashSet<Entity>,
     used_entities: HashSet<Entity>,
-    components: HashMap<Entity, HashSet<ComponentType>>,
+    components: HashMap<Entity, HashSet<ComponentType>>, // TODO: this rathre should move to
 }
 
 impl EntitiesPool {
@@ -39,6 +39,7 @@ impl EntitiesPool {
         self.components.remove(&e);
     }
 
+    // TODO: move this to ComponentManager
     pub fn add_component_type<T: Any>(&mut self, e: Entity) {
         let type_id = TypeId::of::<T>();
         let current_types = self.components.get_mut(&e);
@@ -48,10 +49,10 @@ impl EntitiesPool {
         };
     }
 
+    // TODO: move this to ComponentManager
     pub fn get_component_types(&self, e: Entity) -> Option<&HashSet<TypeId>> {
         self.components.get(&e)
     }
-
 }
 
 #[cfg(test)]
