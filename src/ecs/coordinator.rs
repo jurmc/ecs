@@ -72,21 +72,21 @@ impl Coordinator {
 mod tests {
     use super::*;
 
-    struct SystemU32 {
+    struct SimpleSystem{
         entities: HashSet<Entity>,
         component_types: HashSet<TypeId>,
     }
 
-    impl SystemU32 {
-        fn new() -> SystemU32 {
-            SystemU32 {
+    impl SimpleSystem {
+        fn new() -> SimpleSystem {
+            SimpleSystem {
                 entities: HashSet::new(),
                 component_types: vec![TypeId::of::<u32>()].into_iter().collect(),
             }
         }
     }
 
-    impl System for SystemU32{
+    impl System for SimpleSystem {
         fn add(&mut self, e: Entity) {
             println!("System32: add: e: {}", e);
             self.entities.insert(e);
@@ -114,7 +114,7 @@ mod tests {
     fn test_coordinator_for_simple_component() {
         let mut c = Coordinator::new();
 
-        let s = SystemU32::new();
+        let s = SimpleSystem::new();
         let sys_id = c.register_system(s);
 
         let e1 = c.get_entity();
@@ -132,6 +132,53 @@ mod tests {
         assert_eq!(Some(&mut (v1+1)), v1_updated);
         let v2_updated = c.get_component::<u32>(&e2);
         assert_eq!(Some(&mut (v2+1)), v2_updated);
+    }
+
+    // TODO: FOCUSE here
+    // This system has to use two componet_types
+    // Both of thies types has to be structs
+    struct ComplexSystem{
+        entities: HashSet<Entity>,
+        component_types: HashSet<TypeId>,
+    }
+
+    impl ComplexSystem {
+        fn new() -> ComplexSystem {
+            ComplexSystem {
+                entities: HashSet::new(),
+                component_types: vec![TypeId::of::<u32>()].into_iter().collect(),
+            }
+        }
+    }
+
+    impl System for ComplexSystem {
+        fn add(&mut self, e: Entity) {
+            println!("System32: add: e: {}", e);
+            self.entities.insert(e);
+        }
+
+        fn remove(&mut self, e: Entity) {
+            self.entities.remove(&e);
+        }
+
+        fn get_component_types(&self) -> &HashSet<TypeId> {
+            &self.component_types
+        }
+
+        fn apply(&self, cm: &mut ComponentManager) {
+            println!("System32: apply");
+            for e in self.entities.iter() {
+                println!("System32: apply for e: {}", e);
+                let v = cm.get::<u32>(e).unwrap();
+                *v += 1;
+            }
+        }
+    }
+
+    // TODO: use Complex system in simmilar manter as for test for SimpleSystem
+    #[test]
+    fn test_coordinator_for_complex_two_componets() {
+        assert_eq!(1, 2);
     }
 }
 
