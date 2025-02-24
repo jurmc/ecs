@@ -13,7 +13,7 @@ use std::fmt;
 pub struct Coordinator {
     pool: EntitiesPool,
     cm: ComponentManager,
-    pub sm: SystemManager,    // TODO: make this field private
+    sm: SystemManager,    // TODO: make this field private
 }
 
 impl Coordinator {
