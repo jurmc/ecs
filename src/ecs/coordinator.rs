@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use std::fmt::Display;
 use std::any::Any;
 use std::any::TypeId;
-
+use std::fmt;
 
 pub struct Coordinator {
     pool: EntitiesPool,
@@ -81,7 +81,9 @@ mod tests {
         fn new() -> SimpleSystem {
             SimpleSystem {
                 entities: HashSet::new(),
-                component_types: vec![TypeId::of::<u32>()].into_iter().collect(),
+                component_types: vec![
+                    TypeId::of::<u32>()
+                ].into_iter().collect(),
             }
         }
     }
@@ -134,9 +136,20 @@ mod tests {
         assert_eq!(Some(&mut (v2+1)), v2_updated);
     }
 
-    // TODO: FOCUSE here
-    // This system has to use two componet_types
-    // Both of thies types has to be structs
+    #[derive(Debug, PartialEq)]
+    struct Position { x: i32, y: i32, }
+    struct Velocity { vx: i32, vy: i32, }
+    impl fmt::Display for Position {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Position display (TODO: to be removed)")
+        }
+    }
+    impl fmt::Display for Velocity {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Velocity display (TODO: to be removed)")
+        }
+    }
+
     struct ComplexSystem{
         entities: HashSet<Entity>,
         component_types: HashSet<TypeId>,
@@ -146,7 +159,10 @@ mod tests {
         fn new() -> ComplexSystem {
             ComplexSystem {
                 entities: HashSet::new(),
-                component_types: vec![TypeId::of::<u32>()].into_iter().collect(),
+                component_types: vec![
+                    TypeId::of::<Position>(),
+                    TypeId::of::<Velocity>(),
+                ].into_iter().collect(),
             }
         }
     }
@@ -166,19 +182,49 @@ mod tests {
         }
 
         fn apply(&self, cm: &mut ComponentManager) {
-            println!("System32: apply");
+            println!("ComplexSystem: apply");
             for e in self.entities.iter() {
-                println!("System32: apply for e: {}", e);
-                let v = cm.get::<u32>(e).unwrap();
-                *v += 1;
+                println!("ComplexSystem: apply for e: {}", e);
+                let position = cm.get::<Position>(e).unwrap();
+                let (x, y) = (position.x, position.y);
+                let velocity = cm.get::<Velocity>(e).unwrap();
+                let new_pos = Position { x: x + velocity.vx, y: y + velocity.vy };
+                cm.add(*e, new_pos);
             }
         }
     }
 
-    // TODO: use Complex system in simmilar manter as for test for SimpleSystem
     #[test]
     fn test_coordinator_for_complex_two_componets() {
-        assert_eq!(1, 2);
+        let mut c = Coordinator::new();
+
+        let s = ComplexSystem::new();
+        let sys_id = c.register_system(s);
+
+        let e1 = c.get_entity();
+        let e2 = c.get_entity();
+
+        c.register_component::<Position>();
+        c.register_component::<Velocity>();
+
+        let pos1 = Position { x: 1, y: 2 };
+        let vel1 = Velocity { vx: 1, vy: 2 };
+        c.add_component(e1, pos1);
+        c.add_component(e1, vel1);
+        let pos2 = Position { x: 1, y: 2 };
+        let vel2 = Velocity { vx: -1, vy: -2 };
+        c.add_component(e2, pos2);
+        c.add_component(e2, vel2);
+
+        c.apply(&sys_id);
+
+        let updated_pos1 = c.get_component::<Position>(&e1).unwrap();
+        let expected_pos1 = &mut Position { x: 2, y: 4 };
+        assert_eq!(expected_pos1, updated_pos1);
+
+        let updated_pos2 = c.get_component::<Position>(&e2).unwrap();
+        let expected_pos2 = &mut Position { x: 0, y: 0 };
+        assert_eq!(expected_pos2, updated_pos2);
     }
 }
 
