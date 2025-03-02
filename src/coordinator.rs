@@ -1,8 +1,8 @@
 use crate::EntitiesPool;
-use crate::ecs::Entity;
+use crate::Entity;
 use crate::ComponentManager;
 use crate::SystemManager;
-use crate::ecs::System;
+use crate::System;
 
 use std::collections::HashSet;
 use std::fmt::Display;

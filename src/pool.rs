@@ -1,6 +1,6 @@
-use crate::ecs::MAX_ENTITIES;
-use crate::ecs::Entity;
-use crate::ecs::ComponentType;
+use crate::MAX_ENTITIES;
+use crate::Entity;
+use crate::ComponentType;
 
 use std::collections::HashMap;
 use std::collections::HashSet;

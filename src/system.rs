@@ -1,5 +1,5 @@
-use crate::ecs::Entity;
-use crate::ecs::ComponentManager;
+use crate::Entity;
+use crate::ComponentManager;
 
 use std::collections::HashSet;
 use std::collections::HashMap;

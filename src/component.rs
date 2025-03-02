@@ -1,4 +1,4 @@
-use crate::ecs::Entity;
+use crate::Entity;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
