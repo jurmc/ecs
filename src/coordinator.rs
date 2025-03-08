@@ -117,7 +117,9 @@ mod tests {
         let mut c = Coordinator::new();
 
         let s = SimpleSystem::new();
-        let sys_id = c.register_system(s);
+        let sys_id = c.register_system(s); // TODO: this test should work also if system is
+                                                   // registered after componets are added (see
+                                                   // TODO: below)
 
         let e1 = c.get_entity();
         let e2 = c.get_entity();
@@ -128,6 +130,11 @@ mod tests {
 
         c.add_component(e1, v1);
         c.add_component(e2, v2);
+
+        //let sys_id = c.register_system(s); // TODO: this test should work also if system is
+        //                                           // registered after componets are added (see
+        //                                           // TODO: above)
+
         c.apply(&sys_id);
 
         let v1_updated = c.get_component::<u32>(&e1);

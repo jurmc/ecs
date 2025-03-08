@@ -1,4 +1,5 @@
 use crate::Entity;
+use crate::ComponentType;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
@@ -45,6 +46,7 @@ pub struct ComponentManager {
     component_types: HashSet<TypeId>, // TODO: we might not need it... TypeId key from
                                       // component_arrays map should be enough
     component_arrays: HashMap<TypeId, Box<dyn Any>>,
+    entity_to_component_types: HashMap<Entity, HashSet<ComponentType>>,
 }
 
 impl ComponentManager {
@@ -52,6 +54,7 @@ impl ComponentManager {
         ComponentManager {
             component_types: HashSet::new(),
             component_arrays: HashMap::new(),
+            entity_to_component_types: HashMap::new(),
         }
     }
 
@@ -70,6 +73,12 @@ impl ComponentManager {
         } else {
             panic!("Component type shoud be registered prior to its use");
         }
+
+        if let Some(hash_set) = self.entity_to_component_types.get_mut(&e) {
+            hash_set.insert(id);
+        } else {
+            self.entity_to_component_types.insert(e, HashSet::from_iter(vec![id]));
+        };
     }
 
     pub fn get<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
@@ -78,8 +87,20 @@ impl ComponentManager {
     }
 
     pub fn remove<T: Display + Any>(&mut self, e: &Entity) -> Option<T> {
+        let id = TypeId::of::<T>();
+        if let Some(hash_set) = self.entity_to_component_types.get_mut(&e) {
+            hash_set.remove(&id);
+        }
+
         let array = self.get_component_array();
         array.remove(e)
+    }
+
+    pub fn get_component_types(&self, e: Entity) -> HashSet<ComponentType> {
+        match self.entity_to_component_types.get(&e) {
+            Some(types) => types.clone(),
+            None => HashSet::new()
+        }
     }
 
     // Priv
@@ -146,10 +167,21 @@ mod tests {
         assert_eq!(Some(&mut Coords { x: 5, y: 10 }), cm.get::<Coords>(&e1));
         assert_eq!(None, cm.get::<Coords>(&e2));
 
+        let e1_types = cm.get_component_types(e1);
+        let e1_expected_types = HashSet::from_iter(vec![TypeId::of::<i32>(), TypeId::of::<Coords>()]);
+        assert_eq!(e1_expected_types, e1_types);
+        let e2_types = cm.get_component_types(e2);
+        let ew_expected_types = HashSet::from_iter(vec![TypeId::of::<i32>()]);
+        assert_eq!(ew_expected_types, e2_types);
+
         cm.remove::<i32>(&e1);
         cm.remove::<Coords>(&e1);
         assert_eq!(None, cm.get::<i32>(&e1));
         assert_eq!(None, cm.get::<Coords>(&e1));
+
+        let e1_types = cm.get_component_types(e1);
+        let e1_expected_types = HashSet::new(); // Empty HashSet
+        assert_eq!(e1_expected_types, e1_types);
     }
 
     #[test]

@@ -11,6 +11,7 @@ pub struct EntitiesPool {
     available_entities: HashSet<Entity>,
     used_entities: HashSet<Entity>,
     components: HashMap<Entity, HashSet<ComponentType>>, // TODO: this rathre should move to
+                                                         // component manager
 }
 
 impl EntitiesPool {
