@@ -36,17 +36,9 @@ impl Coordinator {
     }
 
     pub fn add_component<T: Display + Any>(&mut self, e: Entity, c: T) {
-        self.pool.add_component_type::<T>(e);
-        self.cm.add::<T>(e, c); // TODO: do we need ::<T> in this call instance?
-
-        let component_types_for_entity = self.pool.get_component_types(e);
-        match component_types_for_entity {
-            Some(component_types_for_entity) =>
-                self.sm.add_component(e, component_types_for_entity),
-                None => {
-                    // TODO: If let might be bettre, we're not interestend in handling None
-                }
-        }
+        self.cm.add(e, c);
+        let component_types_for_entity = self.cm.get_component_types(e);
+        self.sm.add_component(e, &component_types_for_entity);
     }
 
     pub fn get_component<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
