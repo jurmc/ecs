@@ -137,17 +137,18 @@ mod tests {
 
         let mut sm = SystemManager::new();
         let s = TestSystem::new();
-        let sys_id = sm.register(s);
+        // TODO: SystemManager works fine as long as system is registered before entity with
+        // relevant componets is added. We have to supplement  sm.register() in a way that all
+        // existig entities managed by SM will be checked if they sghould be added to newly added
+        // system
+        let sys_id = sm.register(s); // TODO: this works fine, but see TODO below
         sm.add_component(e1, &HashSet::from_iter(vec![TypeId::of::<i32>()]));
+        //let sys_id = sm.register(s); // TODO: this will no work at the moment, fix it
 
         sm.apply(&sys_id, &mut cm);
         assert_eq!(Some(&mut (v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem"); 
         assert_eq!(Some(&mut (v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
 
-        // TODO: SystemManager works fine as long as system is registered before entity with
-        // relevant componets is added. We have to supplement  sm.register() in a way that all
-        // existig entities managed by SM will be checked if they sghould be added to newly added
-        // system
     }
 }
 
