@@ -94,7 +94,7 @@ mod tests {
             &self.component_types
         }
 
-        fn apply(&self, cm: &mut ComponentManager) {
+        fn apply(&mut self, cm: &mut ComponentManager) {
             println!("System32: apply");
             for e in self.entities.iter() {
                 println!("System32: apply for e: {}", e);
@@ -180,7 +180,7 @@ mod tests {
             &self.component_types
         }
 
-        fn apply(&self, cm: &mut ComponentManager) {
+        fn apply(&mut self, cm: &mut ComponentManager) {
             println!("ComplexSystem: apply");
             for e in self.entities.iter() {
                 println!("ComplexSystem: apply for e: {}", e);

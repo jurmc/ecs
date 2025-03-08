@@ -12,7 +12,7 @@ pub trait System {
     fn remove(&mut self, e: Entity);
 
     fn get_component_types(&self) -> &HashSet<TypeId>;
-    fn apply(&self, cm: &mut ComponentManager);
+    fn apply(&mut self, cm: &mut ComponentManager);
 }
 
 pub struct SystemManager {
@@ -53,13 +53,13 @@ impl SystemManager {
         }
     }
 
-    pub fn apply(&self, id: &TypeId, cm: &mut ComponentManager) {
-        self.systems.get(&id).unwrap().apply(cm)
+    pub fn apply(&mut self, id: &TypeId, cm: &mut ComponentManager) {
+        self.systems.get_mut(&id).unwrap().apply(cm)
     }
 
     // TODO: we rather iterate over containted systems, this function will be removed
-    pub fn kick_all_systems(&self, cm: &mut ComponentManager) {
-        for (_, system) in self.systems.iter() {
+    pub fn kick_all_systems(&mut self, cm: &mut ComponentManager) {
+        for (_, system) in self.systems.iter_mut() {
             println!("some system will be kicked");
             system.apply(cm)
         }
@@ -101,7 +101,7 @@ mod tests {
             &self.component_types
         }
 
-        fn apply(&self, cm: &mut ComponentManager) {
+        fn apply(&mut self, cm: &mut ComponentManager) {
             for e in self.entities.iter() {
                 let v = cm.get::<i32>(e).unwrap();
                 *v += 1;
@@ -181,7 +181,7 @@ impl System for Render {
         &self.component_types
     }
 
-    fn apply(&self, cm: &mut ComponentManager) {
+    fn apply(&mut self, cm: &mut ComponentManager) {
         println!("Apply for Render");
         for e in self.entities.iter() {
             println!(" e: {}", e);
@@ -216,7 +216,7 @@ impl System for Transform {
         &self.component_types
     }
 
-    fn apply(&self, cm: &mut ComponentManager) {
+    fn apply(&mut self, cm: &mut ComponentManager) {
         println!("Apply for Transform");
         for e in self.entities.iter() {
             println!(" e: {}", e);
