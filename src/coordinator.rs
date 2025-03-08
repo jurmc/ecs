@@ -1,3 +1,5 @@
+// TODO: change name of coordinator to just ecssth or sth ecs
+//       this is just public interface to ecs
 use crate::EntitiesPool;
 use crate::Entity;
 use crate::ComponentManager;
@@ -13,7 +15,7 @@ use std::fmt;
 pub struct Coordinator {
     pool: EntitiesPool,
     cm: ComponentManager,
-    sm: SystemManager,    // TODO: make this field private
+    sm: SystemManager,
 }
 
 impl Coordinator {
@@ -29,6 +31,8 @@ impl Coordinator {
     pub fn get_entity(&mut self) -> Entity {
         self.pool.get()
     }
+
+    // TODO: returning to pool is missin?
 
     // Components
     pub fn register_component<T: Display + Any>(&mut self) {
@@ -54,10 +58,9 @@ impl Coordinator {
         self.sm.apply(&id, &mut self.cm);
     }
 
-    pub fn kick_all_systems(&mut self) {
+    pub fn kick_all_systems(&mut self) { // TODO: rename this to apply
         self.sm.kick_all_systems(&mut self.cm);
     }
-    // TODO
 }
 
 #[cfg(test)]
