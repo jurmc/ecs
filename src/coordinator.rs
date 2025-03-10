@@ -6,11 +6,8 @@ use crate::ComponentManager;
 use crate::SystemManager;
 use crate::System;
 
-use std::collections::HashSet;
-use std::fmt::Display;
 use std::any::Any;
 use std::any::TypeId;
-use std::fmt;
 
 pub struct Coordinator {
     pool: EntitiesPool,
@@ -35,17 +32,17 @@ impl Coordinator {
     // TODO: returning to pool is missin?
 
     // Components
-    pub fn register_component<T: Display + Any>(&mut self) {
+    pub fn register_component<T: Any>(&mut self) {
         self.cm.register::<T>();
     }
 
-    pub fn add_component<T: Display + Any>(&mut self, e: Entity, c: T) {
+    pub fn add_component<T: Any>(&mut self, e: Entity, c: T) {
         self.cm.add(e, c);
         let component_types_for_entity = self.cm.get_component_types(e);
         self.sm.add_component(e, &component_types_for_entity);
     }
 
-    pub fn get_component<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
+    pub fn get_component<T: Any>(&mut self, e: &Entity) -> Option<&mut T> {
         self.cm.get(e)
     }
 
@@ -65,6 +62,7 @@ impl Coordinator {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
     use super::*;
 
     struct SimpleSystem{
@@ -141,16 +139,6 @@ mod tests {
     #[derive(Debug, PartialEq)]
     struct Position { x: i32, y: i32, }
     struct Velocity { vx: i32, vy: i32, }
-    impl fmt::Display for Position {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "Position display (TODO: to be removed)")
-        }
-    }
-    impl fmt::Display for Velocity {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "Velocity display (TODO: to be removed)")
-        }
-    }
 
     struct ComplexSystem{
         entities: HashSet<Entity>,

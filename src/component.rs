@@ -3,18 +3,17 @@ use crate::ComponentType;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
-use std::fmt::Display;
 use std::any::TypeId;
 use std::any::Any;
 
 use std::fmt;
 
-pub struct ComponentArray<T: Display> {
+pub struct ComponentArray<T> {
     name: &'static str,
     components: HashMap<Entity, T>,
 }
 
-impl<T:  Display> ComponentArray<T> {
+impl<T> ComponentArray<T> {
     pub fn new(name: &'static str) -> ComponentArray<T> {
         ComponentArray {
             name,
@@ -32,13 +31,6 @@ impl<T:  Display> ComponentArray<T> {
 
     pub fn remove(&mut self, e: &Entity) -> Option<T> {
         self.components.remove(e)
-    }
-
-    pub fn dump(&self) {
-        println!("Dump (type {:?}):", self.name);
-        for (e, component) in self.components.iter() {
-            println!("e: {}, component: {}", e, component);
-        }
     }
 }
 
@@ -58,18 +50,17 @@ impl ComponentManager {
         }
     }
 
-    pub fn register<T: Display + Any>(&mut self) {
+    pub fn register<T: Any>(&mut self) {
         self.component_types.insert(TypeId::of::<T>());
         let arr: ComponentArray<T>  = ComponentArray::new("coords");
         self.component_arrays.insert(TypeId::of::<T>(), Box::new(arr));
     }
 
-    pub fn add<T: Display + Any>(&mut self, e: Entity, component: T) {
+    pub fn add<T: Any>(&mut self, e: Entity, component: T) {
         let id = TypeId::of::<T>();
         if self.component_types.contains(&id) {
             let array = self.get_component_array();
             array.add(e, component);
-            array.dump();
         } else {
             panic!("Component type shoud be registered prior to its use");
         }
@@ -81,12 +72,12 @@ impl ComponentManager {
         };
     }
 
-    pub fn get<T: Display + Any>(&mut self, e: &Entity) -> Option<&mut T> {
+    pub fn get<T: Any>(&mut self, e: &Entity) -> Option<&mut T> {
         let array = self.get_component_array();
         array.get(&e)
     }
 
-    pub fn remove<T: Display + Any>(&mut self, e: &Entity) -> Option<T> {
+    pub fn remove<T: Any>(&mut self, e: &Entity) -> Option<T> {
         let id = TypeId::of::<T>();
         if let Some(hash_set) = self.entity_to_component_types.get_mut(&e) {
             hash_set.remove(&id);
@@ -105,7 +96,7 @@ impl ComponentManager {
 
     // Priv
 
-    fn get_component_array<T: Display + Any>(&mut self) -> &mut ComponentArray<T> {
+    fn get_component_array<T: Any>(&mut self) -> &mut ComponentArray<T> {
         let id = TypeId::of::<T>();
         self.component_arrays.get_mut(&id).unwrap().downcast_mut::<ComponentArray<T>>().unwrap()
     }
@@ -137,14 +128,6 @@ mod tests {
     struct Coords {
         x: i32,
         y: i32,
-    }
-
-    // TODO: relax this requirment that says Component has to implement Display (maybe this is
-    // possible)
-    impl fmt::Display for Coords {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "coords display (TODO: to be removed)")
-        }
     }
 
     #[test]
