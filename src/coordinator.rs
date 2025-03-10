@@ -83,7 +83,6 @@ mod tests {
 
     impl System for SimpleSystem {
         fn add(&mut self, e: Entity) {
-            println!("System32: add: e: {}", e);
             self.entities.insert(e);
         }
 
@@ -96,9 +95,7 @@ mod tests {
         }
 
         fn apply(&mut self, cm: &mut ComponentManager) {
-            println!("System32: apply");
             for e in self.entities.iter() {
-                println!("System32: apply for e: {}", e);
                 let v = cm.get::<u32>(e).unwrap();
                 *v += 1;
             }
@@ -159,7 +156,6 @@ mod tests {
 
     impl System for ComplexSystem {
         fn add(&mut self, e: Entity) {
-            println!("System32: add: e: {}", e);
             self.entities.insert(e);
         }
 
@@ -172,9 +168,7 @@ mod tests {
         }
 
         fn apply(&mut self, cm: &mut ComponentManager) {
-            println!("ComplexSystem: apply");
             for e in self.entities.iter() {
-                println!("ComplexSystem: apply for e: {}", e);
                 let position = cm.get::<Position>(e).unwrap();
                 let (x, y) = (position.x, position.y);
                 let velocity = cm.get::<Velocity>(e).unwrap();
