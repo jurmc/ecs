@@ -55,8 +55,8 @@ impl Coordinator {
         self.sm.apply(&id, &mut self.cm);
     }
 
-    pub fn kick_all_systems(&mut self) { // TODO: rename this to apply
-        self.sm.kick_all_systems(&mut self.cm);
+    pub fn apply_all(&mut self) { // TODO: rename this to apply
+        self.sm.apply_all(&mut self.cm);
     }
 }
 

@@ -57,10 +57,8 @@ impl SystemManager {
         self.systems.get_mut(&id).unwrap().apply(cm)
     }
 
-    // TODO: we rather iterate over containted systems, this function will be removed
-    pub fn kick_all_systems(&mut self, cm: &mut ComponentManager) {
+    pub fn apply_all(&mut self, cm: &mut ComponentManager) {
         for (_, system) in self.systems.iter_mut() {
-            println!("some system will be kicked");
             system.apply(cm)
         }
     }
