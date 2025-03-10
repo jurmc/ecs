@@ -19,6 +19,3 @@ pub mod system;
 pub use system::System;
 pub use system::SystemManager;
 
-pub use system::Render;
-pub use system::Transform;
-
