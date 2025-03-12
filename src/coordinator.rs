@@ -3,11 +3,12 @@
 use crate::EntitiesPool;
 use crate::Entity;
 use crate::ComponentManager;
+use crate::ComponentType;
 use crate::SystemManager;
 use crate::System;
+use crate::SystemType;
 
 use std::any::Any;
-use std::any::TypeId;
 
 pub struct Coordinator {
     pool: EntitiesPool,
@@ -47,15 +48,15 @@ impl Coordinator {
     }
 
     // Systems
-    pub fn register_system<T: System + Any>(&mut self, s: T) -> TypeId {
+    pub fn register_system<T: System + Any>(&mut self, s: T) -> SystemType {
         self.sm.register(s)
     }
 
-    pub fn apply(&mut self, id: &TypeId) {
-        self.sm.apply(&id, &mut self.cm);
+    pub fn apply(&mut self, sys_id: &SystemType) {
+        self.sm.apply(&sys_id, &mut self.cm);
     }
 
-    pub fn apply_all(&mut self) { // TODO: rename this to apply
+    pub fn apply_all(&mut self) {
         self.sm.apply_all(&mut self.cm);
     }
 }
@@ -67,16 +68,14 @@ mod tests {
 
     struct SimpleSystem{
         entities: HashSet<Entity>,
-        component_types: HashSet<TypeId>,
+        component_types: HashSet<ComponentType>,
     }
 
     impl SimpleSystem {
         fn new() -> SimpleSystem {
             SimpleSystem {
                 entities: HashSet::new(),
-                component_types: vec![
-                    TypeId::of::<u32>()
-                ].into_iter().collect(),
+                component_types: vec![ComponentType::of::<u32>()].into_iter().collect(),
             }
         }
     }
@@ -90,7 +89,7 @@ mod tests {
             self.entities.remove(&e);
         }
 
-        fn get_component_types(&self) -> &HashSet<TypeId> {
+        fn get_component_types(&self) -> &HashSet<ComponentType> {
             &self.component_types
         }
 
@@ -139,7 +138,7 @@ mod tests {
 
     struct ComplexSystem{
         entities: HashSet<Entity>,
-        component_types: HashSet<TypeId>,
+        component_types: HashSet<ComponentType>,
     }
 
     impl ComplexSystem {
@@ -147,8 +146,8 @@ mod tests {
             ComplexSystem {
                 entities: HashSet::new(),
                 component_types: vec![
-                    TypeId::of::<Position>(),
-                    TypeId::of::<Velocity>(),
+                    ComponentType::of::<Position>(),
+                    ComponentType::of::<Velocity>(),
                 ].into_iter().collect(),
             }
         }
@@ -163,7 +162,7 @@ mod tests {
             self.entities.remove(&e);
         }
 
-        fn get_component_types(&self) -> &HashSet<TypeId> {
+        fn get_component_types(&self) -> &HashSet<ComponentType> {
             &self.component_types
         }
 

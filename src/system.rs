@@ -1,9 +1,10 @@
 use crate::Entity;
 use crate::ComponentManager;
+use crate::ComponentType;
+use crate::SystemType;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
-use std::any::TypeId;
 use std::any::Any;
 
 
@@ -11,16 +12,13 @@ pub trait System {
     fn add(&mut self, e: Entity);
     fn remove(&mut self, e: Entity);
 
-    fn get_component_types(&self) -> &HashSet<TypeId>;
+    fn get_component_types(&self) -> &HashSet<ComponentType>;
     fn apply(&mut self, cm: &mut ComponentManager);
 }
 
 pub struct SystemManager {
-    system_component_types: HashMap<TypeId, HashSet<TypeId>>, // TODO: 2nd TypeId could be aliaed to CompType or sth alike,
-                                                              // more generaly, it'd more clear if
-                                                              // we have ComponetType alias and
-                                                              // SystemType alias
-    systems               : HashMap<TypeId, Box<dyn System>>,
+    system_component_types: HashMap<SystemType, HashSet<ComponentType>>,
+    systems               : HashMap<SystemType, Box<dyn System>>,
 }
 
 impl SystemManager {
@@ -31,14 +29,14 @@ impl SystemManager {
         }
     }
 
-    pub fn register<T: System + Any>(&mut self, system: T) -> TypeId {
-        let sys_id = TypeId::of::<T>();
+    pub fn register<T: System + Any>(&mut self, system: T) -> SystemType {
+        let sys_id = SystemType::of::<T>();
         self.system_component_types.insert(sys_id, system.get_component_types().clone());
         self.systems.insert(sys_id, Box::new(system));
         sys_id
     }
 
-    pub fn add_component(&mut self, e: Entity, component_types: &HashSet<TypeId>) { // TODO: this
+    pub fn add_component(&mut self, e: Entity, component_types: &HashSet<ComponentType>) { // TODO: this
                                                                                     // method
                                                                                     // should
                                                                                     // rather be
@@ -53,7 +51,7 @@ impl SystemManager {
         }
     }
 
-    pub fn apply(&mut self, id: &TypeId, cm: &mut ComponentManager) {
+    pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) {
         self.systems.get_mut(&id).unwrap().apply(cm)
     }
 
@@ -70,7 +68,7 @@ mod tests {
 
     struct TestSystem {
         entities: HashSet<Entity>,
-        component_types: HashSet<TypeId>,
+        component_types: HashSet<ComponentType>,
     }
 
     impl TestSystem {
@@ -95,7 +93,7 @@ mod tests {
             self.entities.remove(&e);
         }
 
-        fn get_component_types(&self) -> &HashSet<TypeId> {
+        fn get_component_types(&self) -> &HashSet<ComponentType> {
             &self.component_types
         }
 
@@ -140,7 +138,7 @@ mod tests {
         // existig entities managed by SM will be checked if they sghould be added to newly added
         // system
         let sys_id = sm.register(s); // TODO: this works fine, but see TODO below
-        sm.add_component(e1, &HashSet::from_iter(vec![TypeId::of::<i32>()]));
+        sm.add_component(e1, &HashSet::from_iter(vec![ComponentType::of::<i32>()]));
         //let sys_id = sm.register(s); // TODO: this will no work at the moment, fix it
 
         sm.apply(&sys_id, &mut cm);

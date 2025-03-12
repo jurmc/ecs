@@ -3,20 +3,15 @@ use crate::ComponentType;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
-use std::any::TypeId;
 use std::any::Any;
 
-use std::fmt;
-
 pub struct ComponentArray<T> {
-    name: &'static str,
     components: HashMap<Entity, T>,
 }
 
 impl<T> ComponentArray<T> {
-    pub fn new(name: &'static str) -> ComponentArray<T> {
+    pub fn new(name: &'static str) -> ComponentArray<T> { // TODO: name are is not used...
         ComponentArray {
-            name,
             components: HashMap::new(),
         }
     }
@@ -35,9 +30,8 @@ impl<T> ComponentArray<T> {
 }
 
 pub struct ComponentManager {
-    component_types: HashSet<TypeId>, // TODO: we might not need it... TypeId key from
-                                      // component_arrays map should be enough
-    component_arrays: HashMap<TypeId, Box<dyn Any>>,
+    component_types: HashSet<ComponentType>,
+    component_arrays: HashMap<ComponentType, Box<dyn Any>>,
     entity_to_component_types: HashMap<Entity, HashSet<ComponentType>>,
 }
 
@@ -51,13 +45,13 @@ impl ComponentManager {
     }
 
     pub fn register<T: Any>(&mut self) {
-        self.component_types.insert(TypeId::of::<T>());
+        self.component_types.insert(ComponentType::of::<T>());
         let arr: ComponentArray<T>  = ComponentArray::new("coords");
-        self.component_arrays.insert(TypeId::of::<T>(), Box::new(arr));
+        self.component_arrays.insert(ComponentType::of::<T>(), Box::new(arr));
     }
 
     pub fn add<T: Any>(&mut self, e: Entity, component: T) {
-        let id = TypeId::of::<T>();
+        let id = ComponentType::of::<T>();
         if self.component_types.contains(&id) {
             let array = self.get_component_array();
             array.add(e, component);
@@ -78,7 +72,7 @@ impl ComponentManager {
     }
 
     pub fn remove<T: Any>(&mut self, e: &Entity) -> Option<T> {
-        let id = TypeId::of::<T>();
+        let id = ComponentType::of::<T>();
         if let Some(hash_set) = self.entity_to_component_types.get_mut(&e) {
             hash_set.remove(&id);
         }
@@ -97,7 +91,7 @@ impl ComponentManager {
     // Priv
 
     fn get_component_array<T: Any>(&mut self) -> &mut ComponentArray<T> {
-        let id = TypeId::of::<T>();
+        let id = ComponentType::of::<T>();
         self.component_arrays.get_mut(&id).unwrap().downcast_mut::<ComponentArray<T>>().unwrap()
     }
 
@@ -151,10 +145,10 @@ mod tests {
         assert_eq!(None, cm.get::<Coords>(&e2));
 
         let e1_types = cm.get_component_types(e1);
-        let e1_expected_types = HashSet::from_iter(vec![TypeId::of::<i32>(), TypeId::of::<Coords>()]);
+        let e1_expected_types = HashSet::from_iter(vec![ComponentType::of::<i32>(), ComponentType::of::<Coords>()]);
         assert_eq!(e1_expected_types, e1_types);
         let e2_types = cm.get_component_types(e2);
-        let ew_expected_types = HashSet::from_iter(vec![TypeId::of::<i32>()]);
+        let ew_expected_types = HashSet::from_iter(vec![ComponentType::of::<i32>()]);
         assert_eq!(ew_expected_types, e2_types);
 
         cm.remove::<i32>(&e1);

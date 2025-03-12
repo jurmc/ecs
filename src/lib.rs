@@ -2,8 +2,8 @@ use std::any::TypeId;
 
 const MAX_ENTITIES: u32 = 100;
 pub type Entity = u32;
-pub type ComponentType = TypeId; // TODO: start using it
-pub type SystemType = TypeId;    // TODO: start using it
+pub type ComponentType = TypeId;
+pub type SystemType = TypeId;
 
 pub mod coordinator;
 pub use coordinator::Coordinator;
