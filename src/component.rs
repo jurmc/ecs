@@ -5,8 +5,31 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::any::Any;
 
+pub struct GlobalComponentArray {
+    components: HashMap<u8, Box<dyn Any>>, // TODO: instead of u8 I'd like to have some
+}
+
+impl GlobalComponentArray {
+    pub fn new() -> GlobalComponentArray {
+        GlobalComponentArray {
+            components: HashMap::new(),
+        }
+    }
+
+    pub fn add<T: Any>(&mut self, name: u8, c: T) {
+        self.components.insert(name, Box::new(c));
+    }
+
+    pub fn get_global<T: 'static>(&mut self, name: u8) -> Option<&mut T> {
+        let val = self.components.get_mut(&name).unwrap().downcast_mut::<T>();
+        val
+    }
+}
+
+
 pub struct ComponentArray<T> {
     components: HashMap<Entity, T>,
+                                                  // string type as a key
 }
 
 impl<T> ComponentArray<T> {
@@ -167,6 +190,18 @@ mod tests {
         let mut cm = ComponentManager::new();
         let e: Entity = 1;
         cm.add(e, 3.14);
+    }
+
+    #[test]
+    fn test_global_components() {
+        let mut g = GlobalComponentArray::new();
+        g.add(1u8, vec![1u8, 2u8, 3u8]);
+        assert_eq!(Some(&mut vec![1u8, 2u8, 3u8]), g.get_global::<Vec<u8>>(1u8));
+
+        let v = g.get_global::<Vec<u8>>(1u8).unwrap();
+        v.pop();
+        assert_eq!(Some(&mut vec![1u8, 2u8]), g.get_global::<Vec<u8>>(1u8));
+
     }
 
 }
