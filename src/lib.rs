@@ -12,6 +12,7 @@ pub mod pool;
 pub use pool::EntitiesPool;
 
 pub mod component;
+pub use component::GlobalComponent;
 pub use component::ComponentArray;
 pub use component::ComponentManager;
 

@@ -5,18 +5,18 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::any::Any;
 
-pub struct GlobalComponentArray {
+pub struct GlobalComponent {
     components: HashMap<u8, Box<dyn Any>>, // TODO: instead of u8 I'd like to have some
 }
 
-impl GlobalComponentArray {
-    pub fn new() -> GlobalComponentArray {
-        GlobalComponentArray {
+impl GlobalComponent{
+    pub fn new() -> GlobalComponent{
+        GlobalComponent{
             components: HashMap::new(),
         }
     }
 
-    pub fn add<T: Any>(&mut self, name: u8, c: T) {
+    pub fn add_global<T: Any>(&mut self, name: u8, c: T) {
         self.components.insert(name, Box::new(c));
     }
 
@@ -25,7 +25,6 @@ impl GlobalComponentArray {
         val
     }
 }
-
 
 pub struct ComponentArray<T> {
     components: HashMap<Entity, T>,
@@ -125,6 +124,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_global_components() {
+        let mut g = GlobalComponent::new();
+        g.add_global(1u8, vec![1u8, 2u8, 3u8]);
+        assert_eq!(Some(&mut vec![1u8, 2u8, 3u8]), g.get_global::<Vec<u8>>(1u8));
+
+        let v = g.get_global::<Vec<u8>>(1u8).unwrap();
+        v.pop();
+        assert_eq!(Some(&mut vec![1u8, 2u8]), g.get_global::<Vec<u8>>(1u8));
+
+    }
+
+    #[test]
     fn test_component_array() {
         let mut a = ComponentArray::new("test_array");
         let e1: Entity = 1;
@@ -191,17 +202,4 @@ mod tests {
         let e: Entity = 1;
         cm.add(e, 3.14);
     }
-
-    #[test]
-    fn test_global_components() {
-        let mut g = GlobalComponentArray::new();
-        g.add(1u8, vec![1u8, 2u8, 3u8]);
-        assert_eq!(Some(&mut vec![1u8, 2u8, 3u8]), g.get_global::<Vec<u8>>(1u8));
-
-        let v = g.get_global::<Vec<u8>>(1u8).unwrap();
-        v.pop();
-        assert_eq!(Some(&mut vec![1u8, 2u8]), g.get_global::<Vec<u8>>(1u8));
-
-    }
-
 }

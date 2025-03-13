@@ -4,6 +4,7 @@ use crate::EntitiesPool;
 use crate::Entity;
 use crate::ComponentManager;
 use crate::ComponentType;
+use crate::GlobalComponent;
 use crate::SystemManager;
 use crate::System;
 use crate::SystemType;
@@ -11,6 +12,7 @@ use crate::SystemType;
 use std::any::Any;
 
 pub struct Coordinator {
+    global: GlobalComponent,
     pool: EntitiesPool,
     cm: ComponentManager,
     sm: SystemManager,
@@ -19,10 +21,20 @@ pub struct Coordinator {
 impl Coordinator {
     pub fn new() -> Coordinator {
         Coordinator {
+            global: GlobalComponent::new(),
             pool: EntitiesPool::new(),
             cm: ComponentManager::new(),
             sm: SystemManager::new(),
         }
+    }
+
+    // Global Components
+    pub fn add_global<T: Any>(&mut self, name: u8, c: T) {
+        self.global.add_global(name, c);
+    }
+
+    pub fn get_global<T: 'static>(&mut self, name: u8) -> Option<&mut T> {
+        self.global.get_global(name)
     }
 
     // Entities
@@ -30,9 +42,9 @@ impl Coordinator {
         self.pool.get()
     }
 
-    // TODO: returning to pool is missin?
+    // TODO: returning to pool is missing?
 
-    // Components
+    // Entities Components
     pub fn register_component<T: Any>(&mut self) {
         self.cm.register::<T>();
     }
