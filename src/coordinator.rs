@@ -12,7 +12,6 @@ use crate::SystemType;
 use std::any::Any;
 
 pub struct Coordinator {
-    global: GlobalComponent,
     pool: EntitiesPool,
     cm: ComponentManager,
     sm: SystemManager,
@@ -21,7 +20,6 @@ pub struct Coordinator {
 impl Coordinator {
     pub fn new() -> Coordinator {
         Coordinator {
-            global: GlobalComponent::new(),
             pool: EntitiesPool::new(),
             cm: ComponentManager::new(),
             sm: SystemManager::new(),
@@ -30,11 +28,11 @@ impl Coordinator {
 
     // Global Components
     pub fn add_global<T: Any>(&mut self, name: u8, c: T) {
-        self.global.add_global(name, c);
+        self.cm.add_global(name, c);
     }
 
     pub fn get_global<T: 'static>(&mut self, name: u8) -> Option<&mut T> {
-        self.global.get_global(name)
+        self.cm.get_global(name)
     }
 
     // Entities

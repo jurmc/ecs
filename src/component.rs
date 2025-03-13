@@ -52,6 +52,7 @@ impl<T> ComponentArray<T> {
 }
 
 pub struct ComponentManager {
+    global: GlobalComponent,
     component_types: HashSet<ComponentType>,
     component_arrays: HashMap<ComponentType, Box<dyn Any>>,
     entity_to_component_types: HashMap<Entity, HashSet<ComponentType>>,
@@ -60,12 +61,23 @@ pub struct ComponentManager {
 impl ComponentManager {
     pub fn new() -> ComponentManager {
         ComponentManager {
+            global: GlobalComponent::new(),
             component_types: HashSet::new(),
             component_arrays: HashMap::new(),
             entity_to_component_types: HashMap::new(),
         }
     }
 
+    // Global Components
+    pub fn add_global<T: Any>(&mut self, name: u8, c: T) {
+        self.global.add_global(name, c);
+    }
+
+    pub fn get_global<T: 'static>(&mut self, name: u8) -> Option<&mut T> {
+        self.global.get_global(name)
+    }
+
+    // Entities Components
     pub fn register<T: Any>(&mut self) {
         self.component_types.insert(ComponentType::of::<T>());
         let arr: ComponentArray<T>  = ComponentArray::new("coords");
