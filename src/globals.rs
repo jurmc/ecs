@@ -17,11 +17,13 @@ impl Globals {
     }
 
     pub fn get<T: 'static>(&mut self, name: &str) -> Option<&T> {
-        self.globals.get(name).unwrap().downcast_ref::<T>()
+        let retval = self.globals.get(name)?;
+        retval.downcast_ref::<T>()
     }
 
     pub fn get_mut<T: 'static>(&mut self, name: &str) -> Option<&mut T> {
-        self.globals.get_mut(name).unwrap().downcast_mut::<T>()
+        let retval = self.globals.get_mut(name)?;
+        retval.downcast_mut::<T>()
     }
 }
 
@@ -51,5 +53,16 @@ mod tests {
         v.pop();
 
         assert_eq!(Some(&v2_expected), g.get::<Vec<u32>>(name1));
+    }
+
+    #[test]
+    fn test_globals_exceptions() {
+        let mut g: Globals = Globals::new();
+
+        let name = "non-existing";
+        assert_eq!(None, g.get::<Vec<u32>>(name));
+
+        let name = "non-existing";
+        assert_eq!(None, g.get_mut::<Vec<u32>>(name));
     }
 }
