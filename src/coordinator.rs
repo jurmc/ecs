@@ -4,7 +4,6 @@ use crate::EntitiesPool;
 use crate::Entity;
 use crate::ComponentManager;
 use crate::ComponentType;
-use crate::GlobalComponent;
 use crate::SystemManager;
 use crate::System;
 use crate::SystemType;
@@ -24,15 +23,6 @@ impl Coordinator {
             cm: ComponentManager::new(),
             sm: SystemManager::new(),
         }
-    }
-
-    // Global Components
-    pub fn add_global<T: Any>(&mut self, name: u8, c: T) {
-        self.cm.add_global(name, c);
-    }
-
-    pub fn get_global<T: 'static>(&mut self, name: u8) -> Option<&mut T> {
-        self.cm.get_global(name)
     }
 
     // Entities

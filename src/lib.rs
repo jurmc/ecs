@@ -12,7 +12,6 @@ pub mod pool;
 pub use pool::EntitiesPool;
 
 pub mod component;
-pub use component::GlobalComponent;
 pub use component::ComponentArray;
 pub use component::ComponentManager;
 
@@ -20,3 +19,5 @@ pub mod system;
 pub use system::System;
 pub use system::SystemManager;
 
+pub mod globals;
+pub use globals::Globals;

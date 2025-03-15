@@ -5,27 +5,6 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::any::Any;
 
-pub struct GlobalComponent {
-    components: HashMap<u8, Box<dyn Any>>, // TODO: instead of u8 I'd like to have some
-}
-
-impl GlobalComponent{
-    pub fn new() -> GlobalComponent{
-        GlobalComponent{
-            components: HashMap::new(),
-        }
-    }
-
-    pub fn add_global<T: Any>(&mut self, name: u8, c: T) {
-        self.components.insert(name, Box::new(c));
-    }
-
-    pub fn get_global<T: 'static>(&mut self, name: u8) -> Option<&mut T> {
-        let val = self.components.get_mut(&name).unwrap().downcast_mut::<T>();
-        val
-    }
-}
-
 pub struct ComponentArray<T> {
     components: HashMap<Entity, T>,
                                                   // string type as a key
@@ -52,7 +31,6 @@ impl<T> ComponentArray<T> {
 }
 
 pub struct ComponentManager {
-    global: GlobalComponent,
     component_types: HashSet<ComponentType>,
     component_arrays: HashMap<ComponentType, Box<dyn Any>>,
     entity_to_component_types: HashMap<Entity, HashSet<ComponentType>>,
@@ -61,20 +39,10 @@ pub struct ComponentManager {
 impl ComponentManager {
     pub fn new() -> ComponentManager {
         ComponentManager {
-            global: GlobalComponent::new(),
             component_types: HashSet::new(),
             component_arrays: HashMap::new(),
             entity_to_component_types: HashMap::new(),
         }
-    }
-
-    // Global Components
-    pub fn add_global<T: Any>(&mut self, name: u8, c: T) {
-        self.global.add_global(name, c);
-    }
-
-    pub fn get_global<T: 'static>(&mut self, name: u8) -> Option<&mut T> {
-        self.global.get_global(name)
     }
 
     // Entities Components
@@ -134,18 +102,6 @@ impl ComponentManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_global_components() {
-        let mut g = GlobalComponent::new();
-        g.add_global(1u8, vec![1u8, 2u8, 3u8]);
-        assert_eq!(Some(&mut vec![1u8, 2u8, 3u8]), g.get_global::<Vec<u8>>(1u8));
-
-        let v = g.get_global::<Vec<u8>>(1u8).unwrap();
-        v.pop();
-        assert_eq!(Some(&mut vec![1u8, 2u8]), g.get_global::<Vec<u8>>(1u8));
-
-    }
 
     #[test]
     fn test_component_array() {
