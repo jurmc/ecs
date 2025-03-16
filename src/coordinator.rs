@@ -56,8 +56,8 @@ impl Coordinator {
         self.sm.apply(&sys_id, &mut self.cm)
     }
 
-    pub fn apply_all(&mut self) {
-        self.sm.apply_all(&mut self.cm);
+    pub fn apply_all(&mut self) -> Vec<Box<dyn Fn(&mut Coordinator)>> {
+        self.sm.apply_all(&mut self.cm)
     }
 }
 
@@ -199,16 +199,6 @@ mod tests {
         fn get_component_types(&self) -> &HashSet<ComponentType> {
             &self.component_types
         }
-
-//        fn apply(&mut self, cm: &mut ComponentManager) {
-//            for e in self.entities.iter() {
-//                let position = cm.get::<Position>(e).unwrap();
-//                let (x, y) = (position.x, position.y);
-//                let velocity = cm.get::<Velocity>(e).unwrap();
-//                let new_pos = Position { x: x + velocity.vx, y: y + velocity.vy };
-//                cm.add(*e, new_pos);
-//            }
-//        }
 
         fn apply(&mut self, cm: &mut ComponentManager)
             -> Box<dyn Fn(&mut Coordinator)> {

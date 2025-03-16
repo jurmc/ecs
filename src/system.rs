@@ -53,19 +53,22 @@ impl SystemManager {
         }
     }
 
-    pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) ->
-        Box<dyn Fn(&mut Coordinator)> {
+    pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
         self.systems.get_mut(&id).unwrap().apply(cm) // TODO: do sth with unwrap here 
     }
 
-    pub fn apply_all(&mut self, cm: &mut ComponentManager) {
+    pub fn apply_all(&mut self, cm: &mut ComponentManager) -> Vec<Box<dyn Fn(&mut Coordinator)>> {
+        let mut result = Vec::new();
         for (_, system) in self.systems.iter_mut() {
-            let _ignored = system.apply(cm); // TODO: ultimately this
-                                                                           // result shouldn't be
-                                                                           // ignored, but
-                                                                           // accumulated and
-                                                                           // retruned
+            let outcome = system.apply(cm); // TODO: ultimately this
+                                                                            // result shouldn't be
+                                                                            // ignored, but
+                                                                            // accumulated and
+                                                                            // retruned
+            result.push(outcome);
         }
+        let result = Vec::new();
+        result
     }
 }
 
