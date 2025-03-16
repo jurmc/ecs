@@ -52,12 +52,8 @@ impl Coordinator {
         self.sm.register(s)
     }
 
-    pub fn apply(&mut self, sys_id: &SystemType) {
-        self.sm.apply(&sys_id, &mut self.cm);
-    }
-
-    pub fn apply2(&mut self, sys_id: &SystemType) -> Box<dyn Fn(&mut Coordinator)> {
-        self.sm.apply2(&sys_id, &mut self.cm)
+    pub fn apply(&mut self, sys_id: &SystemType) -> Box<dyn Fn(&mut Coordinator)> {
+        self.sm.apply(&sys_id, &mut self.cm)
     }
 
     pub fn apply_all(&mut self) {
@@ -97,13 +93,7 @@ mod tests {
             &self.component_types
         }
 
-        fn apply(&mut self, cm: &mut ComponentManager) {
-            for e in self.entities.iter() {
-                let v = cm.get::<u32>(e).unwrap();
-                *v += 1;
-            }
-        }
-        fn apply2(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
+        fn apply(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
             for e in self.entities.iter() {
                 let v = cm.get::<u32>(e).unwrap();
                 *v += 1;
@@ -130,7 +120,7 @@ mod tests {
         // 1) instanlty update e1's v1 comonent
         // 2) send us update, which after execution
         //   will cause addition of new entity with u32 component
-        let updates = c.apply2(&sys_id);
+        let updates = c.apply(&sys_id);
 
         let expected_e2: u32 = 50;
         let mut expected_v2: u32 = 100;
@@ -168,7 +158,7 @@ mod tests {
         //                                           // registered after componets are added (see
         //                                           // TODO: above)
 
-        c.apply(&sys_id);
+        let _ignored = c.apply(&sys_id); // TODO: _ignored?
 
         let v1_updated = c.get_component::<u32>(&e1);
         assert_eq!(Some(&mut (v1+1)), v1_updated);
@@ -210,7 +200,19 @@ mod tests {
             &self.component_types
         }
 
-        fn apply(&mut self, cm: &mut ComponentManager) {
+//        fn apply(&mut self, cm: &mut ComponentManager) {
+//            for e in self.entities.iter() {
+//                let position = cm.get::<Position>(e).unwrap();
+//                let (x, y) = (position.x, position.y);
+//                let velocity = cm.get::<Velocity>(e).unwrap();
+//                let new_pos = Position { x: x + velocity.vx, y: y + velocity.vy };
+//                cm.add(*e, new_pos);
+//            }
+//        }
+
+        fn apply(&mut self, cm: &mut ComponentManager)
+            -> Box<dyn Fn(&mut Coordinator)> {
+
             for e in self.entities.iter() {
                 let position = cm.get::<Position>(e).unwrap();
                 let (x, y) = (position.x, position.y);
@@ -218,10 +220,7 @@ mod tests {
                 let new_pos = Position { x: x + velocity.vx, y: y + velocity.vy };
                 cm.add(*e, new_pos);
             }
-        }
 
-        fn apply2(&mut self, _cm: &mut ComponentManager)
-            -> Box<dyn Fn(&mut Coordinator)> {
             Box::new(| _coordinator: &mut Coordinator | {
             })
         }

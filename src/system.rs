@@ -15,8 +15,7 @@ pub trait System {
     fn remove(&mut self, e: Entity);
 
     fn get_component_types(&self) -> &HashSet<ComponentType>;
-    fn apply(&mut self, cm: &mut ComponentManager);
-    fn apply2(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)>;
+    fn apply(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)>;
 }
 
 pub struct SystemManager {
@@ -54,18 +53,18 @@ impl SystemManager {
         }
     }
 
-    pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) {
-        self.systems.get_mut(&id).unwrap().apply(cm);  // TODO: do sth with unwrap here
-    }
-
-    pub fn apply2(&mut self, id: &SystemType, cm: &mut ComponentManager) ->
+    pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) ->
         Box<dyn Fn(&mut Coordinator)> {
-        self.systems.get_mut(&id).unwrap().apply2(cm) // TODO: do sth with unwrap here 
+        self.systems.get_mut(&id).unwrap().apply(cm) // TODO: do sth with unwrap here 
     }
 
     pub fn apply_all(&mut self, cm: &mut ComponentManager) {
         for (_, system) in self.systems.iter_mut() {
-            system.apply(cm)
+            let _ignored = system.apply(cm); // TODO: ultimately this
+                                                                           // result shouldn't be
+                                                                           // ignored, but
+                                                                           // accumulated and
+                                                                           // retruned
         }
     }
 }
@@ -105,15 +104,13 @@ mod tests {
             &self.component_types
         }
 
-        fn apply(&mut self, cm: &mut ComponentManager) {
+        fn apply(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
+
             for e in self.entities.iter() {
                 let v = cm.get::<i32>(e).unwrap();
                 *v += 1;
             }
-        }
 
-        fn apply2(&mut self, _cm: &mut ComponentManager)
-            -> Box<dyn Fn(&mut Coordinator)> {
             Box::new(| coordinator: &mut Coordinator | {
                 let e = coordinator.get_entity();
                 let c:  i32 = 100;
