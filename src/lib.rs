@@ -1,6 +1,6 @@
 use std::any::TypeId;
 
-const MAX_ENTITIES: u32 = 10000;
+const MAX_ENTITIES: u32 = 100;
 pub type Entity = u32;
 pub type ComponentType = TypeId;
 pub type SystemType = TypeId;
