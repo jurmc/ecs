@@ -67,7 +67,6 @@ impl SystemManager {
                                                                             // retruned
             result.push(outcome);
         }
-        let result = Vec::new();
         result
     }
 }
