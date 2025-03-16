@@ -56,6 +56,10 @@ impl Coordinator {
         self.sm.apply(&sys_id, &mut self.cm);
     }
 
+    pub fn apply2(&mut self, sys_id: &SystemType) -> Box<dyn Fn(&mut Coordinator)> {
+        self.sm.apply2(&sys_id, &mut self.cm)
+    }
+
     pub fn apply_all(&mut self) {
         self.sm.apply_all(&mut self.cm);
     }
@@ -99,6 +103,46 @@ mod tests {
                 *v += 1;
             }
         }
+        fn apply2(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
+            for e in self.entities.iter() {
+                let v = cm.get::<u32>(e).unwrap();
+                *v += 1;
+            }
+            Box::new(| coordinator: &mut Coordinator | {
+                coordinator.add_component(50, 100u32); 
+            })
+        }
+    }
+
+    #[test]
+    fn test_system_returning_closure() {
+        let mut c = Coordinator::new();
+
+        let s = SimpleSystem::new(); // TODO: rename SimpleSystem to just TestSystem
+        let sys_id = c.register_system(s);
+
+        c.register_component::<u32>();
+        let e1: u32 = c.get_entity();
+        let v1: u32 = 1;
+        c.add_component(e1, v1);
+
+        // Our system is expected to:
+        // 1) instanlty update e1's v1 comonent
+        // 2) send us update, which after execution
+        //   will cause addition of new entity with u32 component
+        let updates = c.apply2(&sys_id);
+
+        let expected_e2: u32 = 50;
+        let mut expected_v2: u32 = 100;
+
+        // Check 1). e1:c1 updated, no additional entity in the ECS
+        assert_eq!(Some(&mut(v1+1)), c.get_component::<u32>(&e1));
+        assert_eq!(None, c.get_component::<u32>(&expected_e2));
+       
+        // Check 2). aditional component added
+        updates(&mut c);
+        assert_eq!(Some(&mut expected_v2), c.get_component::<u32>(&expected_e2));
+
     }
 
     #[test]
@@ -175,6 +219,12 @@ mod tests {
                 cm.add(*e, new_pos);
             }
         }
+
+        fn apply2(&mut self, _cm: &mut ComponentManager)
+            -> Box<dyn Fn(&mut Coordinator)> {
+            Box::new(| _coordinator: &mut Coordinator | {
+            })
+        }
     }
 
     #[test]
@@ -209,6 +259,7 @@ mod tests {
         let expected_pos2 = &mut Position { x: 0, y: 0 };
         assert_eq!(expected_pos2, updated_pos2);
     }
+
 }
 
 

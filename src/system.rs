@@ -2,10 +2,12 @@ use crate::Entity;
 use crate::ComponentManager;
 use crate::ComponentType;
 use crate::SystemType;
+use crate::Coordinator;
 
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::any::Any;
+use std::boxed::Box;
 
 
 pub trait System {
@@ -14,6 +16,7 @@ pub trait System {
 
     fn get_component_types(&self) -> &HashSet<ComponentType>;
     fn apply(&mut self, cm: &mut ComponentManager);
+    fn apply2(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)>;
 }
 
 pub struct SystemManager {
@@ -52,7 +55,12 @@ impl SystemManager {
     }
 
     pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) {
-        self.systems.get_mut(&id).unwrap().apply(cm)
+        self.systems.get_mut(&id).unwrap().apply(cm);  // TODO: do sth with unwrap here
+    }
+
+    pub fn apply2(&mut self, id: &SystemType, cm: &mut ComponentManager) ->
+        Box<dyn Fn(&mut Coordinator)> {
+        self.systems.get_mut(&id).unwrap().apply2(cm) // TODO: do sth with unwrap here 
     }
 
     pub fn apply_all(&mut self, cm: &mut ComponentManager) {
@@ -103,6 +111,15 @@ mod tests {
                 *v += 1;
             }
         }
+
+        fn apply2(&mut self, _cm: &mut ComponentManager)
+            -> Box<dyn Fn(&mut Coordinator)> {
+            Box::new(| coordinator: &mut Coordinator | {
+                let e = coordinator.get_entity();
+                let c:  i32 = 100;
+                coordinator.add_component(e, c);
+            })
+        }
     }
 
     #[test]
@@ -146,5 +163,6 @@ mod tests {
         assert_eq!(Some(&mut (v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
 
     }
+
 }
 
