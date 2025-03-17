@@ -3,7 +3,6 @@
 use crate::EntitiesPool;
 use crate::Entity;
 use crate::ComponentManager;
-use crate::ComponentType;
 use crate::SystemManager;
 use crate::System;
 use crate::SystemType;
@@ -30,9 +29,9 @@ impl Coordinator {
         self.pool.get()
     }
 
-    // TODO: returning to pool is missing?
+    // TODO: returning to pool is indeed missing
 
-    // Entities Components
+    // Components
     pub fn register_component<T: Any>(&mut self) {
         self.cm.register::<T>();
     }
@@ -43,8 +42,12 @@ impl Coordinator {
         self.sm.add_component(e, &component_types_for_entity);
     }
 
-    pub fn get_component<T: Any>(&mut self, e: &Entity) -> Option<&mut T> {
+    pub fn get<T: Any>(&mut self, e: &Entity) -> Option<&T> {
         self.cm.get(e)
+    }
+
+    pub fn get_mut<T: Any>(&mut self, e: &Entity) -> Option<&mut T> {
+        self.cm.get_mut(e)
     }
 
     // Systems
@@ -63,8 +66,9 @@ impl Coordinator {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
+    use crate::ComponentType;
     use super::*;
+    use std::collections::HashSet;
 
     struct SimpleSystem{
         entities: HashSet<Entity>,
@@ -95,7 +99,7 @@ mod tests {
 
         fn apply(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
             for e in self.entities.iter() {
-                let v = cm.get::<u32>(e).unwrap();
+                let v = cm.get_mut::<u32>(e).unwrap();
                 *v += 1;
             }
             Box::new(| coordinator: &mut Coordinator | {
@@ -126,12 +130,12 @@ mod tests {
         let mut expected_v2: u32 = 100;
 
         // Check 1). e1:c1 updated, no additional entity in the ECS
-        assert_eq!(Some(&mut(v1+1)), c.get_component::<u32>(&e1));
-        assert_eq!(None, c.get_component::<u32>(&expected_e2));
-       
+        assert_eq!(Some(&(v1+1)), c.get::<u32>(&e1));
+        assert_eq!(None, c.get::<u32>(&expected_e2));
+
         // Check 2). aditional component added
         updates(&mut c);
-        assert_eq!(Some(&mut expected_v2), c.get_component::<u32>(&expected_e2));
+        assert_eq!(Some(&expected_v2), c.get::<u32>(&expected_e2));
 
     }
 
@@ -160,10 +164,8 @@ mod tests {
 
         let _ignored = c.apply(&sys_id); // TODO: _ignored?
 
-        let v1_updated = c.get_component::<u32>(&e1);
-        assert_eq!(Some(&mut (v1+1)), v1_updated);
-        let v2_updated = c.get_component::<u32>(&e2);
-        assert_eq!(Some(&mut (v2+1)), v2_updated);
+        assert_eq!(Some(&(v1+1)), c.get::<u32>(&e1));
+        assert_eq!(Some(&(v2+1)), c.get::<u32>(&e2));
     }
 
     #[derive(Debug, PartialEq)]
@@ -204,7 +206,8 @@ mod tests {
             -> Box<dyn Fn(&mut Coordinator)> {
 
             for e in self.entities.iter() {
-                let position = cm.get::<Position>(e).unwrap();
+                let position = cm.get::<Position>(e).unwrap();  // TODO: get_mut, and modify
+                                                                // without copying
                 let (x, y) = (position.x, position.y);
                 let velocity = cm.get::<Velocity>(e).unwrap();
                 let new_pos = Position { x: x + velocity.vx, y: y + velocity.vy };
@@ -238,15 +241,13 @@ mod tests {
         c.add_component(e2, pos2);
         c.add_component(e2, vel2);
 
-        c.apply(&sys_id);
+        let _ignored = c.apply(&sys_id);
 
-        let updated_pos1 = c.get_component::<Position>(&e1).unwrap();
-        let expected_pos1 = &mut Position { x: 2, y: 4 };
-        assert_eq!(expected_pos1, updated_pos1);
+        let expected_pos1 = &Position { x: 2, y: 4 };
+        assert_eq!(expected_pos1, c.get::<Position>(&e1).unwrap());
 
-        let updated_pos2 = c.get_component::<Position>(&e2).unwrap();
         let expected_pos2 = &mut Position { x: 0, y: 0 };
-        assert_eq!(expected_pos2, updated_pos2);
+        assert_eq!(expected_pos2, c.get::<Position>(&e2).unwrap());
     }
 
 }

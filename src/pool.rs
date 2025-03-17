@@ -19,7 +19,7 @@ impl EntitiesPool {
         EntitiesPool { available_entities, used_entities }
     }
 
-    pub fn get(&mut self) -> Entity {
+    pub fn get(&mut self) -> Entity { // TODO: this should rather be called 'take'
         let e = self.available_entities.iter().next().unwrap().clone();
         self.available_entities.remove(&e);
         self.used_entities.insert(e);
@@ -39,13 +39,13 @@ mod tests {
 
     #[test]
     fn test_pool() {
-        let mut ep = EntitiesPool::new();
+        let mut pool = EntitiesPool::new();
         for _i in 0..MAX_ENTITIES-1 {
-            ep.get();
+            pool.get();
         }
 
-        let last_e = ep.get();
-        ep.give_back(last_e);
-        assert_eq!(last_e, ep.get());
+        let last_e = pool.get();
+        pool.give_back(last_e);
+        assert_eq!(last_e, pool.get());
     }
 }

@@ -11,7 +11,7 @@ pub struct ComponentArray<T> {
 }
 
 impl<T> ComponentArray<T> {
-    pub fn new(name: &'static str) -> ComponentArray<T> { // TODO: name are is not used...
+    pub fn new(_name: &'static str) -> ComponentArray<T> { // TODO: _name are is not used...
         ComponentArray {
             components: HashMap::new(),
         }
@@ -21,7 +21,11 @@ impl<T> ComponentArray<T> {
         self.components.insert(e, component);
     }
 
-    pub fn get(&mut self, e: &Entity) -> Option<&mut T> {
+    pub fn get(&mut self, e: &Entity) -> Option<&T> {
+        self.components.get(e)
+    }
+
+    pub fn get_mut(&mut self, e: &Entity) -> Option<&mut T> {
         self.components.get_mut(e)
     }
 
@@ -68,9 +72,14 @@ impl ComponentManager {
         };
     }
 
-    pub fn get<T: Any>(&mut self, e: &Entity) -> Option<&mut T> {
-        let array = self.get_component_array();
+    pub fn get<T: Any>(&mut self, e: &Entity) -> Option<&T> {
+        let array = self.get_component_array(); // TODO: get_component_array and get_component_array_mut?
         array.get(&e)
+    }
+
+    pub fn get_mut<T: Any>(&mut self, e: &Entity) -> Option<&mut T> {
+        let array = self.get_component_array();
+        array.get_mut(&e)
     }
 
     pub fn remove<T: Any>(&mut self, e: &Entity) -> Option<T> {
@@ -105,19 +114,29 @@ mod tests {
 
     #[test]
     fn test_component_array() {
-        let mut a = ComponentArray::new("test_array");
+        let mut a = ComponentArray::new("test_array"); // TODO: we are
+                                                                                   // not using
+                                                                                   // name at the
+                                                                                   // moment
         let e1: Entity = 1;
         let e2: Entity = 2;
         a.add(e1, "one");
         a.add(e2, "two");
 
-        assert_eq!(Some(&mut "one"), a.get(&e1));
-        assert_eq!(Some(&mut "two"), a.get(&e2));
+        assert_eq!(Some(&"one"), a.get(&e1));
+        assert_eq!(Some(&"two"), a.get(&e2));
 
         assert_eq!(Some("one"), a.remove(&e1));
         assert_eq!(None, a.get(&e1));
         assert_eq!(None, a.remove(&e1));
-        assert_eq!(Some(&mut "two"), a.get(&e2));
+        assert_eq!(Some(&"two"), a.get(&e2));
+
+        a.add(e1, "word1");
+        if let Some(mut_ref) = a.get_mut(&e1) {
+            *mut_ref = "word2";
+        }
+        assert_eq!(Some(&"word2"), a.get(&e1));
+
     }
 
     #[derive(Debug,PartialEq)]
@@ -140,11 +159,16 @@ mod tests {
 
         cm.add(e2, 2);
 
-        assert_eq!(Some(&mut 1), cm.get::<i32>(&e1));
-        assert_eq!(Some(&mut 2), cm.get::<i32>(&e2));
+        assert_eq!(Some(&1), cm.get::<i32>(&e1));
+        assert_eq!(Some(&2), cm.get::<i32>(&e2));
 
-        assert_eq!(Some(&mut Coords { x: 5, y: 10 }), cm.get::<Coords>(&e1));
+        assert_eq!(Some(&Coords { x: 5, y: 10 }), cm.get::<Coords>(&e1));
         assert_eq!(None, cm.get::<Coords>(&e2));
+
+        if let Some(coords) = cm.get_mut::<Coords>(&e1) {
+            coords.x = 6;
+        }
+        assert_eq!(Some(&Coords { x: 6, y: 10 }), cm.get::<Coords>(&e1));
 
         let e1_types = cm.get_component_types(e1);
         let e1_expected_types = HashSet::from_iter(vec![ComponentType::of::<i32>(), ComponentType::of::<Coords>()]);
@@ -165,7 +189,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_cm_panics_if_entity_added_without_prior_registration() {
+    fn test_cm_panics_if_entity_added_without_prior_type_registration() {
         let mut cm = ComponentManager::new();
         let e: Entity = 1;
         cm.add(e, 3.14);

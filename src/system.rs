@@ -109,7 +109,7 @@ mod tests {
         fn apply(&mut self, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
 
             for e in self.entities.iter() {
-                let v = cm.get::<i32>(e).unwrap();
+                let v = cm.get_mut::<i32>(e).unwrap();
                 *v += 1;
             }
 
@@ -158,8 +158,8 @@ mod tests {
         //let sys_id = sm.register(s); // TODO: this will no work at the moment, fix it
 
         sm.apply(&sys_id, &mut cm);
-        assert_eq!(Some(&mut (v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem"); 
-        assert_eq!(Some(&mut (v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
+        assert_eq!(Some(&(v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem");
+        assert_eq!(Some(&(v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
 
     }
 
