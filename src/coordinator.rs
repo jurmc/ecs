@@ -7,6 +7,7 @@ use crate::SystemManager;
 use crate::System;
 use crate::SystemType;
 
+use std::collections::hash_set::Iter;
 use std::any::Any;
 
 pub struct Coordinator {
@@ -25,11 +26,18 @@ impl Coordinator {
     }
 
     // Entities
-    pub fn take_entity(&mut self) -> Entity {
+    pub fn entity_take(&mut self) -> Entity {
         self.pool.take()
     }
 
     // TODO: returning to pool is indeed missing
+    pub fn entity_back(&mut self, e: Entity) {
+        self.pool.back(e)
+    }
+
+    pub fn entities_iter(&self) -> Iter<'_, Entity> {
+        self.pool.taken_iter()
+    }
 
     // Components
     pub fn register_component<T: Any>(&mut self) {
@@ -68,6 +76,7 @@ impl Coordinator {
 mod tests {
     use crate::ComponentType;
     use super::*;
+
     use std::collections::HashSet;
 
     struct SimpleSystem{
@@ -116,7 +125,7 @@ mod tests {
         let sys_id = c.register_system(s);
 
         c.register_component::<u32>();
-        let e1: u32 = c.take_entity();
+        let e1: u32 = c.entity_take();
         let v1: u32 = 1;
         c.add_component(e1, v1);
 
@@ -148,13 +157,12 @@ mod tests {
                                                    // registered after componets are added (see
                                                    // TODO: below)
 
-        let e1 = c.take_entity();
-        let e2 = c.take_entity();
+        let e1 = c.entity_take();
+        let e2 = c.entity_take();
 
         c.register_component::<u32>();
         let v1: u32 = 1;
         let v2: u32 = 1;
-
         c.add_component(e1, v1);
         c.add_component(e2, v2);
 
@@ -167,6 +175,30 @@ mod tests {
         assert_eq!(Some(&(v1+1)), c.get::<u32>(&e1));
         assert_eq!(Some(&(v2+1)), c.get::<u32>(&e2));
     }
+
+    // TODO: we need to have some access to original implementation of registered system
+//    #[test]
+//    fn test_returning_entity_to_pool() {
+//        let mut c = Coordinator::new();
+//
+//        let s = SimpleSystem::new();
+//        let sys_id = c.register_system(s);
+//
+//        let e1 = c.entity_take();
+//        let e2 = c.entity_take();
+//
+//        c.register_component::<u32>();
+//        let v1: u32 = 1;
+//        let v2: u32 = 1;
+//        c.add_component(e1, v1);
+//        c.add_component(e2, v2);
+//
+//        c.entity_back(e1);
+//        assert_eq!(HashSet::from_iter(vec![e2]), s.entities);
+//        // TODO: 1) e1 removed from system
+//        // TODO: 2) e1 components removed from component manager
+//        // TODO: 3) e1 gave back to pool (si it is missing from 'taken' list/set
+//    }
 
     #[derive(Debug, PartialEq)]
     struct Position { x: i32, y: i32, }
@@ -226,8 +258,8 @@ mod tests {
         let s = ComplexSystem::new();
         let sys_id = c.register_system(s);
 
-        let e1 = c.take_entity();
-        let e2 = c.take_entity();
+        let e1 = c.entity_take();
+        let e2 = c.entity_take();
 
         c.register_component::<Position>();
         c.register_component::<Velocity>();
