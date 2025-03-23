@@ -20,17 +20,14 @@ impl EntitiesPool {
         EntitiesPool { available, taken }
     }
 
-    // TODO: will become: take
-    pub fn get(&mut self) -> Entity { // TODO: more like take, since we take something from pool
-                                      // and only can take it back with separate call to giveback
+    pub fn take(&mut self) -> Entity {
         let e = self.available.iter().next().unwrap().clone();
         self.available.remove(&e);
         self.taken.insert(e);
         e
     }
 
-    // TODO: maybe renamed to: return
-    pub fn give_back(&mut self, e: Entity) {
+    pub fn back(&mut self, e: Entity) {
         self.available.insert(e);
         self.taken.remove(&e);
     }
@@ -48,12 +45,12 @@ mod tests {
     fn test_pool() {
         let mut pool = EntitiesPool::new();
         for _i in 0..MAX_ENTITIES-1 {
-            pool.get();
+            pool.take();
         }
 
-        let last_e = pool.get();
-        pool.give_back(last_e);
-        assert_eq!(last_e, pool.get());
+        let last_e = pool.take();
+        pool.back(last_e);
+        assert_eq!(last_e, pool.take());
     }
 
     #[test]
@@ -61,7 +58,7 @@ mod tests {
         let mut ep = EntitiesPool::new();
         let mut taken: HashSet<Entity> = HashSet::new();
         for _ in 0..10 {
-            taken.insert(ep.get());
+            taken.insert(ep.take());
         }
 
         let mut expected: HashSet<Entity> = HashSet::new();

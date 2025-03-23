@@ -114,7 +114,7 @@ mod tests {
             }
 
             Box::new(| coordinator: &mut Coordinator | {
-                let e = coordinator.get_entity();
+                let e = coordinator.take_entity();
                 let c:  i32 = 100;
                 coordinator.add_component(e, c);
             })

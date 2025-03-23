@@ -25,8 +25,8 @@ impl Coordinator {
     }
 
     // Entities
-    pub fn get_entity(&mut self) -> Entity {
-        self.pool.get()
+    pub fn take_entity(&mut self) -> Entity {
+        self.pool.take()
     }
 
     // TODO: returning to pool is indeed missing
@@ -116,7 +116,7 @@ mod tests {
         let sys_id = c.register_system(s);
 
         c.register_component::<u32>();
-        let e1: u32 = c.get_entity();
+        let e1: u32 = c.take_entity();
         let v1: u32 = 1;
         c.add_component(e1, v1);
 
@@ -148,8 +148,8 @@ mod tests {
                                                    // registered after componets are added (see
                                                    // TODO: below)
 
-        let e1 = c.get_entity();
-        let e2 = c.get_entity();
+        let e1 = c.take_entity();
+        let e2 = c.take_entity();
 
         c.register_component::<u32>();
         let v1: u32 = 1;
@@ -226,8 +226,8 @@ mod tests {
         let s = ComplexSystem::new();
         let sys_id = c.register_system(s);
 
-        let e1 = c.get_entity();
-        let e2 = c.get_entity();
+        let e1 = c.take_entity();
+        let e2 = c.take_entity();
 
         c.register_component::<Position>();
         c.register_component::<Velocity>();
