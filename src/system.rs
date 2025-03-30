@@ -7,8 +7,8 @@ use crate::Coordinator;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::any::Any;
-use std::boxed::Box;
-
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub trait System {
     fn add(&mut self, e: Entity);
@@ -20,7 +20,7 @@ pub trait System {
 
 pub struct SystemManager {
     system_component_types: HashMap<SystemType, HashSet<ComponentType>>,
-    systems               : HashMap<SystemType, Box<dyn System>>,
+    systems               : HashMap<SystemType, Rc<RefCell<dyn System>>>,
 }
 
 impl SystemManager {
@@ -34,9 +34,13 @@ impl SystemManager {
     pub fn register<T: System + Any>(&mut self, system: T) -> SystemType {
         let sys_id = SystemType::of::<T>();
         self.system_component_types.insert(sys_id, system.get_component_types().clone());
-        self.systems.insert(sys_id, Box::new(system));
+        self.systems.insert(sys_id, Rc::new(RefCell::new(system)));
         sys_id
     }
+
+    //pub fn get<T: Any>(&self, id: SystemType) -> Option<&T> {
+    //    self.systems.get(&id)
+    //}
 
     pub fn add_component(&mut self, e: Entity, component_types: &HashSet<ComponentType>) { // TODO: this
                                                                                     // method
@@ -45,26 +49,25 @@ impl SystemManager {
                                                                                     // called
                                                                                     // update_components?
         for (_, sys) in self.systems.iter_mut() {
-            let sys_component_types = sys.get_component_types();
-            let fit_for_sys = sys_component_types.is_subset(component_types);
+            let fit_for_sys = sys.borrow().get_component_types().is_subset(component_types);
             if fit_for_sys {
-                sys.add(e);
+                sys.borrow_mut().add(e);
             }
         }
     }
 
     pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
-        self.systems.get_mut(&id).unwrap().apply(cm) // TODO: do sth with unwrap here 
+        self.systems.get_mut(&id).unwrap().borrow_mut().apply(cm) // TODO: do sth with unwrap here 
     }
 
     pub fn apply_all(&mut self, cm: &mut ComponentManager) -> Vec<Box<dyn Fn(&mut Coordinator)>> {
         let mut result = Vec::new();
         for (_, system) in self.systems.iter_mut() {
-            let outcome = system.apply(cm); // TODO: ultimately this
-                                                                            // result shouldn't be
-                                                                            // ignored, but
-                                                                            // accumulated and
-                                                                            // retruned
+            let outcome = system.borrow_mut().apply(cm); // TODO: ultimately this
+                                                                                        // result shouldn't be
+                                                                                        // ignored, but
+                                                                                        // accumulated and
+                                                                                        // retruned
             result.push(outcome);
         }
         result
