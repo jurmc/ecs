@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::any::Any;
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 
 pub trait System {
     fn add(&mut self, e: Entity);
@@ -21,6 +21,7 @@ pub trait System {
 pub struct SystemManager {
     system_component_types: HashMap<SystemType, HashSet<ComponentType>>,
     systems               : HashMap<SystemType, Rc<RefCell<dyn System>>>,
+    systems_orig          : HashMap<SystemType, Rc<RefCell<dyn Any>>>, // TODO: better name?
 }
 
 impl SystemManager {
@@ -28,19 +29,19 @@ impl SystemManager {
         SystemManager {
             system_component_types: HashMap::new(),
             systems: HashMap::new(),
+            systems_orig: HashMap::new(),
         }
     }
 
     pub fn register<T: System + Any>(&mut self, system: T) -> SystemType {
         let sys_id = SystemType::of::<T>();
         self.system_component_types.insert(sys_id, system.get_component_types().clone());
-        self.systems.insert(sys_id, Rc::new(RefCell::new(system)));
+
+        let sys = Rc::new(RefCell::new(system));
+        self.systems.insert(sys_id, sys.clone());
+        self.systems_orig.insert(sys_id, sys.clone());
         sys_id
     }
-
-    //pub fn get<T: Any>(&self, id: SystemType) -> Option<&T> {
-    //    self.systems.get(&id)
-    //}
 
     pub fn add_component(&mut self, e: Entity, component_types: &HashSet<ComponentType>) { // TODO: this
                                                                                     // method
@@ -151,19 +152,18 @@ mod tests {
         cm.add(e2, v2);
 
         let mut sm = SystemManager::new();
-        let s = TestSystem::new();
+        let test_sys = TestSystem::new();
         // TODO: SystemManager works fine as long as system is registered before entity with
         // relevant componets is added. We have to supplement  sm.register() in a way that all
         // existig entities managed by SM will be checked if they sghould be added to newly added
         // system
-        let sys_id = sm.register(s); // TODO: this works fine, but see TODO below
+        let sys_id = sm.register(test_sys); // TODO: this works fine, but see TODO below
         sm.add_component(e1, &HashSet::from_iter(vec![ComponentType::of::<i32>()]));
         //let sys_id = sm.register(s); // TODO: this will no work at the moment, fix it
 
         sm.apply(&sys_id, &mut cm);
         assert_eq!(Some(&(v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem");
         assert_eq!(Some(&(v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
-
     }
 
 }
