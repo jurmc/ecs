@@ -21,7 +21,6 @@ pub trait System {
 pub struct SystemManager {
     system_component_types: HashMap<SystemType, HashSet<ComponentType>>,
     systems               : HashMap<SystemType, Rc<RefCell<dyn System>>>,
-    systems_orig          : HashMap<SystemType, Rc<RefCell<dyn Any>>>, // TODO: better name?
 }
 
 impl SystemManager {
@@ -29,18 +28,13 @@ impl SystemManager {
         SystemManager {
             system_component_types: HashMap::new(),
             systems: HashMap::new(),
-            systems_orig: HashMap::new(),
         }
     }
 
-    pub fn register<T: System + Any>(&mut self, system: T) -> SystemType {
+    pub fn register<T: System + Any>(&mut self, system: Rc<RefCell<T>>) {
         let sys_id = SystemType::of::<T>();
-        self.system_component_types.insert(sys_id, system.get_component_types().clone());
-
-        let sys = Rc::new(RefCell::new(system));
-        self.systems.insert(sys_id, sys.clone());
-        self.systems_orig.insert(sys_id, sys.clone());
-        sys_id
+        self.system_component_types.insert(sys_id, system.borrow().get_component_types().clone());
+        self.systems.insert(sys_id, system);
     }
 
     pub fn add_component(&mut self, e: Entity, component_types: &HashSet<ComponentType>) { // TODO: this
@@ -57,18 +51,10 @@ impl SystemManager {
         }
     }
 
-    pub fn apply(&mut self, id: &SystemType, cm: &mut ComponentManager) -> Box<dyn Fn(&mut Coordinator)> {
-        self.systems.get_mut(&id).unwrap().borrow_mut().apply(cm) // TODO: do sth with unwrap here 
-    }
-
     pub fn apply_all(&mut self, cm: &mut ComponentManager) -> Vec<Box<dyn Fn(&mut Coordinator)>> {
         let mut result = Vec::new();
         for (_, system) in self.systems.iter_mut() {
-            let outcome = system.borrow_mut().apply(cm); // TODO: ultimately this
-                                                                                        // result shouldn't be
-                                                                                        // ignored, but
-                                                                                        // accumulated and
-                                                                                        // retruned
+            let outcome = system.borrow_mut().apply(cm);
             result.push(outcome);
         }
         result
@@ -152,16 +138,18 @@ mod tests {
         cm.add(e2, v2);
 
         let mut sm = SystemManager::new();
-        let test_sys = TestSystem::new();
+        let test_sys = Rc::new(RefCell::new(TestSystem::new()));
         // TODO: SystemManager works fine as long as system is registered before entity with
         // relevant componets is added. We have to supplement  sm.register() in a way that all
         // existig entities managed by SM will be checked if they sghould be added to newly added
         // system
-        let sys_id = sm.register(test_sys); // TODO: this works fine, but see TODO below
+        sm.register(test_sys.clone()); // TODO: sys_id is not needed
         sm.add_component(e1, &HashSet::from_iter(vec![ComponentType::of::<i32>()]));
-        //let sys_id = sm.register(s); // TODO: this will no work at the moment, fix it
+        assert_eq!(
+            HashSet::from_iter(vec![e1]),
+            test_sys.borrow().entities);
+        test_sys.borrow_mut().apply(&mut cm);
 
-        sm.apply(&sys_id, &mut cm);
         assert_eq!(Some(&(v1+1)), cm.get(&e1), "Should be incremented as this entity IS a part of a TestSystem");
         assert_eq!(Some(&(v2)), cm.get(&e2), "Should not be incremented as this entity IS NOT part of a TestSystem");
     }
