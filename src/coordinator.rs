@@ -64,7 +64,6 @@ impl Coordinator {
         self.sm.register(s);
     }
 
-    //pub fn apply_all(&mut self) -> Vec<Box<dyn Fn(&mut Coordinator)>> { // TODO: change name to
     pub fn apply_all(&mut self) { // TODO: change name to just 'apply'
         let updates = self.sm.apply_all(&mut self.cm);
         for update in updates {

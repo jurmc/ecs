@@ -16,7 +16,7 @@ impl Globals {
         self.globals.insert(String::from(name), Box::new(c));
     }
 
-    pub fn get<T: 'static>(&mut self, name: &str) -> Option<&T> {
+    pub fn get<T: 'static>(&self, name: &str) -> Option<&T> {
         let retval = self.globals.get(name)?;
         retval.downcast_ref::<T>()
     }
